@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-semibold">{{ title }}</h1>
+        <a href="{% url 'new_quote' %}" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg">
+            Create Quote
+        </a>
+    </div>
+
+    {% if quotes %}
+        <div class="bg-white rounded-lg shadow">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-6 py-3 bg-gray-50">QUOTE NUMBER</th>
+                            <th class="px-6 py-3 bg-gray-50">CUSTOMER</th>
+                            <th class="px-6 py-3 bg-gray-50">DATE</th>
+                            <th class="px-6 py-3 bg-gray-50">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for quote in quotes %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4">{{ quote.order_number }}</td>
+                                <td class="px-6 py-4">{{ quote.customer }}</td>
+                                <td class="px-6 py-4">{{ quote.order_date }}</td>
+                                <td class="px-6 py-4">
+                                    <a href="{% url 'quote_detail' quote.id %}" class="text-blue-600 hover:text-blue-900">View</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-gray-500">No quotes found.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

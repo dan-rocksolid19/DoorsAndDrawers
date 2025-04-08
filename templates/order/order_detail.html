@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-indigo-900">{{ title }}</h1>
+        <div class="space-x-4">
+            <a href="{% url 'delete_order' order.id %}" class="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete Order
+            </a>
+            <a href="{% url 'orders' %}" class="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Back to Orders
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Order Information</h2>
+                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Order Number</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ order.order_number }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Order Date</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ order.order_date }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Created At</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ order.created_at }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Updated At</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ order.updated_at }}</dd>
+                        </div>
+                    </dl>
+                </div>
+                <div>
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Customer Information</h2>
+                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Company</dt>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                <a href="{% url 'customer_detail' order.customer.id %}" class="text-indigo-600 hover:text-indigo-900">
+                                    {{ order.customer.company_name|title }}
+                                </a>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Contact</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ order.customer.first_name|capfirst }} {{ order.customer.last_name|capfirst }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="px-4 py-5 sm:px-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Billing Address</h2>
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Address</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        {{ order.billing_address1|title }}
+                        {% if order.billing_address2 %}
+                            <br>{{ order.billing_address2|title }}
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %} 

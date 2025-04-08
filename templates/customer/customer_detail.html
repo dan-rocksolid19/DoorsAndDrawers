@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load formatting %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6">
+    <div class="mb-8 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-indigo-900">{{ customer.company_name|title }}</h1>
+        <div class="space-x-4">
+            <a href="{% url 'delete_customer' customer.id %}" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete Customer
+            </a>
+            <a href="{% url 'edit_customer' customer.id %}" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Edit Customer
+            </a>
+            <a href="{% url 'customers' %}" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Back to Customers
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden mb-6">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Customer Information</h2>
+        </div>
+
+        <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Company Name</h3>
+                <p class="mt-1 text-sm text-gray-900">{{ customer.company_name|title }}</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Contact Name</h3>
+                <p class="mt-1 text-sm text-gray-900">{{ customer.first_name|title }} {{ customer.last_name|title }}</p>
+            </div>
+
+            <div class="col-span-1 md:col-span-2">
+                <h3 class="text-sm font-medium text-gray-500">Address</h3>
+                <p class="mt-1 text-sm text-gray-900">{{ customer.address_line1|title }}</p>
+                {% if customer.address_line2 %}
+                <p class="text-sm text-gray-900">{{ customer.address_line2|title }}</p>
+                {% endif %}
+                <p class="text-sm text-gray-900">{{ customer.city|title }}, {{ customer.get_state_display }} {{ customer.zip_code }}</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Phone</h3>
+                <p class="mt-1 text-sm text-gray-900">{{ customer.phone|format_phone }}</p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Fax</h3>
+                <p class="mt-1 text-sm text-gray-900">{{ customer.fax|format_phone }}</p>
+            </div>
+
+            {% if customer.notes %}
+            <div class="col-span-1 md:col-span-2">
+                <h3 class="text-sm font-medium text-gray-500">Notes</h3>
+                <p class="mt-1 text-sm text-gray-900 whitespace-pre-line">{{ customer.notes|capfirst }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="px-6 py-4 bg-gray-50">
+            <div class="text-xs text-gray-500 space-y-1">
+                <p>Created: {{ customer.created_at|date:"F j, Y, g:i a" }}</p>
+                <p>Last Updated: {{ customer.updated_at|date:"F j, Y, g:i a" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Default Settings</h2>
+        </div>
+
+        <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Discount</h3>
+                <p class="mt-1 text-sm text-gray-900">
+                    {% if customer.defaults.discount_type == 'PERCENT' %}
+                        {{ customer.defaults.discount_value }}%
+                    {% else %}
+                        ${{ customer.defaults.discount_value }}
+                    {% endif %}
+                </p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Surcharge</h3>
+                <p class="mt-1 text-sm text-gray-900">
+                    {% if customer.defaults.surcharge_type == 'PERCENT' %}
+                        {{ customer.defaults.surcharge_value }}%
+                    {% else %}
+                        ${{ customer.defaults.surcharge_value }}
+                    {% endif %}
+                </p>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Shipping</h3>
+                <p class="mt-1 text-sm text-gray-900">
+                    {% if customer.defaults.shipping_type == 'PERCENT' %}
+                        {{ customer.defaults.shipping_value }}%
+                    {% else %}
+                        ${{ customer.defaults.shipping_value }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

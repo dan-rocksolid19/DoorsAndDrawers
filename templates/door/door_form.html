@@ -1,0 +1,92 @@
+{% load widget_tweaks %}
+
+{% comment %}
+<!-- Field rendering template -->
+{% endcomment %}
+
+{% block field_template %}
+    {% with field=field is_dimension=is_dimension|default:False %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                {{ field.label }}{% if is_dimension %} (inches){% endif %}
+            </label>
+            {% render_field field %}
+            {% if field.errors %}
+                <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
+            {% endif %}
+            {% if field.help_text %}
+                <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+            {% endif %}
+        </div>
+    {% endwith %}
+{% endblock %}
+
+<div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Door Details</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Left column: Wood, Style, Edge, Panel Rise -->
+        <div class="space-y-3">
+            {% for field in form %}
+                {% if field.name == 'wood_stock' or field.name == 'style' or field.name == 'edge_profile' or field.name == 'panel_rise' %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                    {% render_field field %}
+                    {% if field.errors %}
+                        <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <!-- Right column: Width, Height, Quantity -->
+        <div class="space-y-3">
+            <!-- Width & Height in a 2-column layout -->
+            <div class="grid grid-cols-2 gap-4">
+                {% for field in form %}
+                    {% if field.name == 'width' or field.name == 'height' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }} (inches)</label>
+                        {% render_field field %}
+                        {% if field.errors %}
+                            <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
+                        {% endif %}
+                        {% if field.help_text %}
+                            <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Quantity -->
+            {% for field in form %}
+                {% if field.name == 'quantity' %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                    {% render_field field %}
+                    {% if field.errors %}
+                        <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="mt-6">
+        <button type="button" 
+                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                hx-post="{% url 'new_door' %}"
+                hx-include="closest div">
+            Add
+        </button>
+    </div>
+</div> 
