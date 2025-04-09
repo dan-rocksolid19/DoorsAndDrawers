@@ -73,12 +73,10 @@ class Style(BaseModel):
 class DoorLineItem(LineItem):
     """Model for door line items with all settings."""
     wood_stock = models.ForeignKey(WoodStock, on_delete=models.PROTECT)
-    design = models.ForeignKey(Design, on_delete=models.PROTECT)
     edge_profile = models.ForeignKey(EdgeProfile, on_delete=models.PROTECT)
-    panel_type = models.ForeignKey(PanelType, on_delete=models.PROTECT)
     panel_rise = models.ForeignKey(PanelRise, on_delete=models.PROTECT, null=True, blank=True)
     style = models.ForeignKey(Style, on_delete=models.PROTECT)
-    
+
     # Door dimensions
     width = models.DecimalField(
         max_digits=10, 
@@ -97,18 +95,10 @@ class DoorLineItem(LineItem):
         verbose_name = "Door Item"
         verbose_name_plural = "Door Items"
     
-    def __str__(self):
-        return f"Door {self.id} - {self.wood_stock.name} {self.style.description}"
-    
     @property
     def square_feet(self):
         """Calculate the square footage of the door."""
         return (self.width * self.height) / 144  # Convert to square feet
     
-    @property
-    def calculate_price(self):
-        """Calculate the price based on door specifications and dimensions."""
-        base_price = self.style.price * self.square_feet
-        # Additional pricing rules would go here
-        
-        return base_price 
+    def __str__(self):
+        return f"Door {self.id} - {self.wood_stock.name} {self.style.description}" 
