@@ -1,0 +1,37 @@
+<tr id="panel-type-row-{{ type.id }}">
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {{ type.name }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        ${{ type.surcharge_width|floatformat:2 }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        ${{ type.surcharge_height|floatformat:2 }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {{ type.surcharge_percent|floatformat:2 }}%
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {{ type.minimum_sq_ft|floatformat:2 }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {% if type.use_flat_panel_price %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Yes
+            </span>
+        {% else %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                No
+            </span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <a href="#" 
+           class="text-indigo-600 hover:text-indigo-900"
+           hx-get="{% url 'edit_panel_type' type.id %}"
+           hx-target="#panel-type-row-{{ type.id }}"
+           hx-swap="outerHTML">
+            Edit
+        </a>
+    </td>
+</tr> 

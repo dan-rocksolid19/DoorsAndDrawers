@@ -1,0 +1,20 @@
+<tr id="wood-stock-row-{{ wood.id }}">
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {{ wood.name }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        ${{ wood.raised_panel_price|floatformat:2 }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        ${{ wood.flat_panel_price|floatformat:2 }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <a href="#" 
+           class="text-indigo-600 hover:text-indigo-900 mr-3"
+           hx-get="{% url 'edit_wood_stock' wood.id %}"
+           hx-target="#wood-stock-row-{{ wood.id }}"
+           hx-swap="outerHTML">
+            Edit
+        </a>
+    </td>
+</tr> 

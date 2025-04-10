@@ -1,0 +1,13 @@
+<tr id="edge-profile-row-{{ profile.id }}">
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {{ profile.name }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <button class="text-indigo-600 hover:text-indigo-900"
+                hx-get="{% url 'edit_edge_profile' profile.id %}"
+                hx-target="#edge-profile-row-{{ profile.id }}"
+                hx-swap="outerHTML">
+            Edit
+        </button>
+    </td>
+</tr> 

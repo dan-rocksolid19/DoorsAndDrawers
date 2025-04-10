@@ -1,0 +1,32 @@
+<tr id="panel-rise-row-{{ rise.id }}" class="bg-gray-50" hx-target="this" hx-swap="outerHTML">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="text" 
+               name="name" 
+               value="{{ rise.name }}"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="panel-rise-form-{{ rise.id }}">
+        {% if errors.name %}<div class="text-xs text-red-600 mt-1">{{ errors.name.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" 
+                form="panel-rise-form-{{ rise.id }}" 
+                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'get_panel_rise' rise.id %}"
+           hx-target="#panel-rise-row-{{ rise.id }}"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="panel-rise-form-{{ rise.id }}" 
+      hx-post="{% url 'update_panel_rise' rise.id %}" 
+      hx-target="#panel-rise-row-{{ rise.id }}" 
+      hx-swap="outerHTML">
+    <!-- Hidden input to ensure the CSRF token is included in the form -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="panel-rise-form-{{ rise.id }}">
+</form> 

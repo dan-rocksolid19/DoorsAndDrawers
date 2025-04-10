@@ -29,7 +29,11 @@
                 </div>
                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Customer</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ quote.customer.company_name }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        <a href="{% url 'customer_detail' quote.customer.id %}" class="text-indigo-600 hover:text-indigo-900">
+                            {{ quote.customer.company_name|title }}
+                        </a>
+                    </dd>
                 </div>
                 <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Billing Address</dt>
@@ -44,7 +48,38 @@
                 </div>
                 <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Total Amount</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${{ quote_total }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                        <dl class="grid grid-cols-1 gap-y-2">
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Items Total</dt>
+                                <dd class="text-sm text-gray-900">${{ quote.item_total|floatformat:2 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Discount</dt>
+                                <dd class="text-sm text-gray-900">-${{ quote.discount_amount|floatformat:2 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Surcharge</dt>
+                                <dd class="text-sm text-gray-900">${{ quote.surcharge_amount|floatformat:2 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Shipping</dt>
+                                <dd class="text-sm text-gray-900">${{ quote.shipping_amount|floatformat:2 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Subtotal</dt>
+                                <dd class="text-sm text-gray-900">${{ quote.subtotal|floatformat:2 }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Tax</dt>
+                                <dd class="text-sm text-gray-900">${{ quote.tax_amount|floatformat:2 }}</dd>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t border-gray-200">
+                                <dt class="text-base font-medium text-gray-900">Grand Total</dt>
+                                <dd class="text-base font-bold text-gray-900">${{ quote.total|floatformat:2 }}</dd>
+                            </div>
+                        </dl>
+                    </dd>
                 </div>
             </dl>
         </div>

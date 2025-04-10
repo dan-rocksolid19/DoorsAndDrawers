@@ -1,0 +1,24 @@
+<tr>
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {{ design.name }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {% if design.arch %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Yes
+            </span>
+        {% else %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                No
+            </span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <button class="text-indigo-600 hover:text-indigo-900"
+                hx-get="{% url 'edit_door_design' design.id %}"
+                hx-target="closest tr"
+                hx-swap="outerHTML">
+            Edit
+        </button>
+    </td>
+</tr> 

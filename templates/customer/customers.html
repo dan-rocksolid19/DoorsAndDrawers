@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load formatting %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
@@ -10,6 +9,35 @@
                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg">
                 Add New Customer
             </a>
+        </div>
+
+        <!-- Search input area -->
+        <div class="mb-4">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search customers..." 
+                    class="pl-10 pr-4 py-2 border rounded-lg w-full"
+                    hx-get="{% url 'customer_search' %}"
+                    hx-trigger="keyup changed delay:300ms, search"
+                    hx-target="#customer-results"
+                    hx-indicator="#search-indicator"
+                />
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <!-- Search icon -->
+                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div id="search-indicator" class="htmx-indicator absolute right-4 inset-y-0 flex items-center">
+                    <!-- Loading spinner -->
+                    <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
         </div>
 
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -23,32 +51,8 @@
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for customer in customers %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ customer.company_name|title }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ customer.first_name|title }} {{ customer.last_name|title }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ customer.phone|format_phone }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ customer.city|title }}, {{ customer.get_state_display }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{% url 'customer_detail' customer.id %}" class="text-blue-600 hover:text-blue-900">View</a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                            No customers found. Add your first customer!
-                        </td>
-                    </tr>
-                    {% endfor %}
+                <tbody id="customer-results" class="bg-white divide-y divide-gray-200">
+                    {% include 'customer/partials/customer_rows.html' with customers=customers %}
                 </tbody>
             </table>
         </div>

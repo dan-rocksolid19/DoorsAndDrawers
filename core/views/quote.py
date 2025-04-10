@@ -78,6 +78,10 @@ def create_quote(request):
                             door_item.save()
                         # Handle other item types here (drawers, etc.) as needed
                     
+                    # Calculate and save quote totals
+                    quote.calculate_totals()
+                    quote.save()
+                    
                     # Clear session data after successful save
                     if 'current_order' in request.session:
                         del request.session['current_order']

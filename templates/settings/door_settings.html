@@ -52,54 +52,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for style in styles %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ style.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ style.panel_type.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ style.design.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            ${{ style.price }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ style.panels_across }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ style.panels_down }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ style.panel_overlap }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% if style.designs_on_top %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Yes
-                                </span>
-                            {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    No
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% if style.designs_on_bottom %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Yes
-                                </span>
-                            {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    No
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                        </td>
-                    </tr>
+                    {% include 'settings/partials/style_row_display.html' with style=style %}
                     {% empty %}
                     <tr>
                         <td colspan="10" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
@@ -135,20 +88,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for wood in wood_stocks %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ wood.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            ${{ wood.raised_panel_price }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            ${{ wood.flat_panel_price }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                        </td>
-                    </tr>
+                    {% include 'settings/partials/wood_stock_row_display.html' with wood=wood %}
                     {% empty %}
                     <tr>
                         <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
@@ -161,6 +101,7 @@
         </div>
     </div>
     
+    <!-- Door Designs -->
     <div class="bg-white rounded-lg shadow-md p-8 mb-8">
         <h2 class="text-xl font-semibold mb-6">Door Designs</h2>
         
@@ -181,25 +122,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for design in designs %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ design.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% if design.arch %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Yes
-                                </span>
-                            {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    No
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                        </td>
-                    </tr>
+                        {% include 'settings/partials/design_row_display.html' %}
                     {% empty %}
                     <tr>
                         <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
@@ -229,14 +152,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for profile in edge_profiles %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ profile.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                        </td>
-                    </tr>
+                        {% include 'settings/partials/edge_profile_row_display.html' with profile=profile %}
                     {% empty %}
                     <tr>
                         <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
@@ -266,14 +182,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for rise in panel_rises %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ rise.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                        </td>
-                    </tr>
+                        {% include 'settings/partials/panel_rise_row_display.html' with rise=rise %}
                     {% empty %}
                     <tr>
                         <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
@@ -318,37 +227,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for panel_type in panel_types %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ panel_type.name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ panel_type.surcharge_width }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ panel_type.surcharge_height }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ panel_type.surcharge_percent }}%
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ panel_type.minimum_sq_ft }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% if panel_type.use_flat_panel_price %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Yes
-                                </span>
-                            {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    No
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                        </td>
-                    </tr>
+                        {% include 'settings/partials/panel_type_row_display.html' with type=panel_type %}
                     {% empty %}
                     <tr>
                         <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">

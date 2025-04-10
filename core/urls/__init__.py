@@ -7,4 +7,5 @@ urlpatterns = [
     path('orders/', include('core.urls.order')),
     path('quotes/', include('core.urls.quote')),
     path('doors/', include('core.urls.door')),
+    path('settings/', include('core.urls.settings')),
 ] 

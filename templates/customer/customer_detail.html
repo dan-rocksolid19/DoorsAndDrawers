@@ -109,5 +109,93 @@
             </div>
         </div>
     </div>
+
+    <!-- Customer Orders Section -->
+    <div class="bg-white shadow rounded-lg overflow-hidden mt-6">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Orders</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            {% if customer.confirmed_orders %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Number</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for order in customer.confirmed_orders %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ order.order_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ order.order_date }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ order.created_at|date:"F j, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="{% url 'order_detail' order.id %}" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="p-6 text-center text-gray-500">
+                    No orders found for this customer.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Customer Quotes Section -->
+    <div class="bg-white shadow rounded-lg overflow-hidden mt-6">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Quotes</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            {% if customer.quotes %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quote Number</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for quote in customer.quotes %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ quote.order_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ quote.order_date }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ quote.created_at|date:"F j, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="{% url 'quote_detail' quote.id %}" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="p-6 text-center text-gray-500">
+                    No quotes found for this customer.
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %} 

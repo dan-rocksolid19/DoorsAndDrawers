@@ -61,6 +61,16 @@ class Customer(BaseModel):
     def __str__(self):
         return f"{self.company_name.title()} - {self.first_name.capitalize()} {self.last_name.capitalize()}"
 
+    @property
+    def quotes(self):
+        """Return only quotes for this customer"""
+        return self.orders.filter(is_quote=True)
+
+    @property
+    def confirmed_orders(self):
+        """Return only confirmed orders for this customer"""
+        return self.orders.filter(is_quote=False)
+
     def save(self, *args, **kwargs):
         # Convert names to lowercase
         self.company_name = self.company_name.lower()

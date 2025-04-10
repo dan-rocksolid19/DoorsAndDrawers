@@ -1,0 +1,82 @@
+<tr id="panel-type-row-{{ type.id }}" class="bg-gray-50" hx-target="this" hx-swap="outerHTML">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="text" 
+               name="name" 
+               value="{{ type.name }}"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="panel-type-form-{{ type.id }}"
+               required>
+        {% if errors.name %}<div class="text-xs text-red-600 mt-1">{{ errors.name.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="surcharge_width" 
+               value="{{ type.surcharge_width }}"
+               step="0.01"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="panel-type-form-{{ type.id }}"
+               required>
+        {% if errors.surcharge_width %}<div class="text-xs text-red-600 mt-1">{{ errors.surcharge_width.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="surcharge_height" 
+               value="{{ type.surcharge_height }}"
+               step="0.01"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="panel-type-form-{{ type.id }}"
+               required>
+        {% if errors.surcharge_height %}<div class="text-xs text-red-600 mt-1">{{ errors.surcharge_height.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="surcharge_percent" 
+               value="{{ type.surcharge_percent }}"
+               step="0.01"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="panel-type-form-{{ type.id }}"
+               required>
+        {% if errors.surcharge_percent %}<div class="text-xs text-red-600 mt-1">{{ errors.surcharge_percent.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="minimum_sq_ft" 
+               value="{{ type.minimum_sq_ft }}"
+               step="0.01"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="panel-type-form-{{ type.id }}"
+               required>
+        {% if errors.minimum_sq_ft %}<div class="text-xs text-red-600 mt-1">{{ errors.minimum_sq_ft.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+            <input type="checkbox" 
+                   name="use_flat_panel_price" 
+                   {% if type.use_flat_panel_price %}checked{% endif %}
+                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                   form="panel-type-form-{{ type.id }}">
+        </div>
+        {% if errors.use_flat_panel_price %}<div class="text-xs text-red-600 mt-1">{{ errors.use_flat_panel_price.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" 
+                form="panel-type-form-{{ type.id }}"
+                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'get_panel_type' type.id %}"
+           hx-target="#panel-type-row-{{ type.id }}"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="panel-type-form-{{ type.id }}" 
+      hx-post="{% url 'update_panel_type' type.id %}" 
+      hx-target="#panel-type-row-{{ type.id }}" 
+      hx-swap="outerHTML">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="panel-type-form-{{ type.id }}">
+</form> 

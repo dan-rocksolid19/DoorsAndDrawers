@@ -1,0 +1,43 @@
+<tr id="design-row-{{ design.id }}" class="bg-gray-50" hx-target="this" hx-swap="outerHTML">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="text" 
+               name="name" 
+               value="{{ design.name }}"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="design-form-{{ design.id }}">
+        {% if errors.name %}<div class="text-xs text-red-600 mt-1">{{ errors.name.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+            <input type="checkbox" 
+                   name="arch" 
+                   {% if design.arch %}checked{% endif %}
+                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                   form="design-form-{{ design.id }}">
+        </div>
+        {% if errors.arch %}<div class="text-xs text-red-600 mt-1">{{ errors.arch.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" 
+                form="design-form-{{ design.id }}"
+                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'get_door_design' design.id %}"
+           hx-target="#design-row-{{ design.id }}"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="design-form-{{ design.id }}" 
+      hx-post="{% url 'update_door_design' design.id %}" 
+      hx-target="#design-row-{{ design.id }}" 
+      hx-swap="outerHTML">
+    {% csrf_token %}
+    <!-- Hidden input to ensure the CSRF token is included in the form -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="design-form-{{ design.id }}">
+</form> 

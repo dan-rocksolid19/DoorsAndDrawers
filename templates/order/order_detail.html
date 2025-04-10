@@ -53,6 +53,12 @@
                             <dt class="text-sm font-medium text-gray-500">Contact</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ order.customer.first_name|capfirst }} {{ order.customer.last_name|capfirst }}</dd>
                         </div>
+                        {% if order.customer.notes %}
+                        <div class="sm:col-span-2">
+                            <dt class="text-sm font-medium text-gray-500">Customer Notes</dt>
+                            <dd class="mt-1 text-sm text-gray-900 whitespace-pre-line">{{ order.customer.notes|capfirst }}</dd>
+                        </div>
+                        {% endif %}
                     </dl>
                 </div>
             </div>
@@ -71,6 +77,15 @@
                 </div>
             </dl>
         </div>
+        
+        {% if order.notes %}
+        <div class="px-4 py-5 sm:px-6 border-t border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Order Notes</h2>
+            <div class="sm:col-span-2">
+                <p class="text-sm text-gray-900 whitespace-pre-line">{{ order.notes|capfirst }}</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Line Items Section -->
@@ -127,26 +142,31 @@
             <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div class="sm:col-span-1">
                     <dt class="text-sm font-medium text-gray-500">Items Total</dt>
-                    <dd class="mt-1 text-sm text-gray-900">${{ order_total|floatformat:2 }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900">${{ order.item_total|floatformat:2 }}</dd>
                 </div>
-                {% comment %}
-                <!-- These could be added later when additional fee calculations are implemented -->
                 <div class="sm:col-span-1">
                     <dt class="text-sm font-medium text-gray-500">Discount</dt>
-                    <dd class="mt-1 text-sm text-gray-900">-$0.00</dd>
+                    <dd class="mt-1 text-sm text-gray-900">-${{ order.discount_amount|floatformat:2 }}</dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Surcharge</dt>
+                    <dd class="mt-1 text-sm text-gray-900">${{ order.surcharge_amount|floatformat:2 }}</dd>
                 </div>
                 <div class="sm:col-span-1">
                     <dt class="text-sm font-medium text-gray-500">Shipping</dt>
-                    <dd class="mt-1 text-sm text-gray-900">$0.00</dd>
+                    <dd class="mt-1 text-sm text-gray-900">${{ order.shipping_amount|floatformat:2 }}</dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Subtotal</dt>
+                    <dd class="mt-1 text-sm text-gray-900">${{ order.subtotal|floatformat:2 }}</dd>
                 </div>
                 <div class="sm:col-span-1">
                     <dt class="text-sm font-medium text-gray-500">Tax</dt>
-                    <dd class="mt-1 text-sm text-gray-900">$0.00</dd>
+                    <dd class="mt-1 text-sm text-gray-900">${{ order.tax_amount|floatformat:2 }}</dd>
                 </div>
-                {% endcomment %}
                 <div class="sm:col-span-2 border-t pt-4 mt-4">
                     <dt class="text-lg font-medium text-gray-900">Grand Total</dt>
-                    <dd class="mt-1 text-lg font-bold text-gray-900">${{ order_total|floatformat:2 }}</dd>
+                    <dd class="mt-1 text-lg font-bold text-gray-900">${{ order.total|floatformat:2 }}</dd>
                 </div>
             </dl>
         </div>

@@ -32,10 +32,39 @@ class Order(BaseModel):
     order_date = models.DateField(
         verbose_name="Order Date"
     )
-    order_number = models.CharField(
-        max_length=50,
-        unique=True,
-        verbose_name="Order Number"
+    notes = models.TextField(
+        blank=True,
+        verbose_name="Notes"
+    )
+    discount_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Discount Amount"
+    )
+    surcharge_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Surcharge Amount"
+    )
+    shipping_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Shipping Amount"
+    )
+    tax_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Tax Amount"
+    )
+    total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Total"
     )
 
     # Managers
@@ -52,12 +81,49 @@ class Order(BaseModel):
         type_prefix = "Quote" if self.is_quote else "Order"
         return f"{type_prefix} {self.order_number} - {self.customer.company_name}"
 
-    def save(self, *args, **kwargs):
-        if not self.order_number:
-            # Generate order number if not provided
-            order_date = self.order_date
-            count_today = Order.objects.filter(order_date=order_date).count() + 1
-            correlative = str(count_today).zfill(3)  # e.g., "001", "002", etc.
-            prefix = 'QTE' if self.is_quote else 'ORD'
-            self.order_number = f"{prefix}-{order_date.strftime('%Y%m%d')}-{correlative}"
-        super().save(*args, **kwargs) 
+    @property
+    def order_number(self):
+        """Generate order number based on type, date, and primary key"""
+        prefix = 'QTE' if self.is_quote else 'ORD'
+        date_str = self.order_date.strftime('%Y%m%d')
+        pk_str = str(self.pk).zfill(4)  # Pad with zeros to 4 digits
+        return f"{prefix}-{date_str}-{pk_str}"
+
+    @property
+    def item_total(self):
+        """Calculate the sum of all line items"""
+        return sum(item.total_price for item in self.line_items.all())
+
+    @property
+    def subtotal(self):
+        """Calculate subtotal (item_total - discount + surcharge + shipping)"""
+        return self.item_total - self.discount_amount + self.surcharge_amount + self.shipping_amount
+
+    def calculate_totals(self):
+        """Calculate and update all order totals based on customer defaults"""
+        # Get customer defaults
+        customer_defaults = self.customer.defaults
+        
+        # Calculate item total
+        item_total = self.item_total
+        
+        # Calculate discount
+        if customer_defaults.discount_type == 'PERCENT':
+            self.discount_amount = item_total * (customer_defaults.discount_value / 100)
+        else:
+            self.discount_amount = customer_defaults.discount_value
+        
+        # Calculate surcharge
+        if customer_defaults.surcharge_type == 'PERCENT':
+            self.surcharge_amount = item_total * (customer_defaults.surcharge_value / 100)
+        else:
+            self.surcharge_amount = customer_defaults.surcharge_value
+        
+        # Calculate shipping
+        if customer_defaults.shipping_type == 'PERCENT':
+            self.shipping_amount = item_total * (customer_defaults.shipping_value / 100)
+        else:
+            self.shipping_amount = customer_defaults.shipping_value
+        
+        # Calculate total
+        self.total = self.subtotal + self.tax_amount 

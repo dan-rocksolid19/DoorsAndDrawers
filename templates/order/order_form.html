@@ -24,7 +24,7 @@
 
                     <div class="space-y-4">
                         {% for field in form %}
-                            {% if field.name == 'customer' or field.name == 'billing_address1' or field.name == 'billing_address2' or field.name == 'order_date' %}
+                            {% if field.name == 'customer' or field.name == 'billing_address1' or field.name == 'billing_address2' or field.name == 'order_date' or field.name == 'notes' %}
                                 <div class="space-y-2">
                                     <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
                                         {{ field.label }}
@@ -37,6 +37,8 @@
                                         {% render_field field class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3" %}
                                     {% elif field.name == 'billing_address2' %}
                                         {% render_field field class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3" %}
+                                    {% elif field.name == 'notes' %}
+                                        {% render_field field class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3" placeholder="Add any special instructions or additional details here" %}
                                     {% else %}
                                         {% if field.errors %}
                                             {% render_field field class="mt-1 block w-full rounded-md border-red-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm py-3" %}

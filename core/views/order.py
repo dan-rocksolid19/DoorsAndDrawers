@@ -23,13 +23,9 @@ def order_detail(request, id):
         'wood_stock', 'edge_profile', 'panel_rise', 'style'
     )
     
-    # Calculate order total
-    order_total = sum(item.total_price for item in door_items)
-    
     return render(request, 'order/order_detail.html', {
         'order': order,
         'door_items': door_items,
-        'order_total': order_total,
         'title': f'Order {order.order_number}'
     })
 
@@ -79,6 +75,10 @@ def create_order(request):
                             )
                             door_item.save()
                         # Handle other item types here (drawers, etc.) as needed
+                    
+                    # Calculate and save order totals
+                    order.calculate_totals()
+                    order.save()
                     
                     # Clear session data after successful save
                     if 'current_order' in request.session:
@@ -172,4 +172,48 @@ def get_customer_details(request):
                 'shipping_type': '',
                 'shipping_value': ''
             }
-        }) 
+        })
+
+def order_search(request):
+    min_id = request.GET.get('min_id', '')
+    max_id = request.GET.get('max_id', '')
+    
+    # Start with all orders
+    orders_query = Order.confirmed.all().select_related('customer')
+    
+    # Apply filters if provided
+    if min_id and min_id.isdigit():
+        orders_query = orders_query.filter(id__gte=int(min_id))
+    
+    if max_id and max_id.isdigit():
+        orders_query = orders_query.filter(id__lte=int(max_id))
+    
+    # Order by descending order date (newest first)
+    orders = orders_query.order_by('-order_date')
+    
+    # Return only the table rows, not a full page
+    return render(request, 'order/partials/order_rows.html', {
+        'orders': orders
+    })
+
+def quote_search(request):
+    min_id = request.GET.get('min_id', '')
+    max_id = request.GET.get('max_id', '')
+    
+    # Start with all quotes
+    quotes_query = Order.quotes.all().select_related('customer')
+    
+    # Apply filters if provided
+    if min_id and min_id.isdigit():
+        quotes_query = quotes_query.filter(id__gte=int(min_id))
+    
+    if max_id and max_id.isdigit():
+        quotes_query = quotes_query.filter(id__lte=int(max_id))
+    
+    # Order by descending order date (newest first)
+    quotes = quotes_query.order_by('-order_date')
+    
+    # Return only the table rows, not a full page
+    return render(request, 'quote/partials/quote_rows.html', {
+        'quotes': quotes
+    }) 

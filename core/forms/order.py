@@ -15,9 +15,11 @@ class BaseOrderForm(forms.ModelForm):
             'billing_address1',
             'billing_address2',
             'order_date',
+            'notes',
         ]
         widgets = {
             'order_date': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
         }
 
 class OrderForm(BaseOrderForm):
