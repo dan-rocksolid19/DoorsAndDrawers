@@ -4,11 +4,23 @@ from decimal import Decimal
 from .base import BaseModel
 
 class LineItem(BaseModel):
+    ITEM_TYPE_CHOICES = [
+        ('door', 'Door'),
+        ('drawer', 'Drawer'),
+        ('other', 'Other'),
+    ]
+    
     order = models.ForeignKey(
         'Order',
         on_delete=models.CASCADE,
         related_name='line_items',
         verbose_name="Order"
+    )
+    type = models.CharField(
+        max_length=10,
+        choices=ITEM_TYPE_CHOICES,
+        default='other',
+        verbose_name="Item Type"
     )
     price_per_unit = models.DecimalField(
         max_digits=10,

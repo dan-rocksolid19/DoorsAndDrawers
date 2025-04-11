@@ -91,6 +91,36 @@ class DoorLineItem(LineItem):
         help_text="Height in inches"
     )
     
+    # Rail dimensions
+    rail_top = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Top rail size in inches",
+        default=Decimal('1.00')
+    )
+    rail_bottom = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Bottom rail size in inches",
+        default=Decimal('1.00')
+    )
+    rail_left = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Left rail size in inches",
+        default=Decimal('1.00')
+    )
+    rail_right = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Right rail size in inches",
+        default=Decimal('1.00')
+    )
+    
     class Meta:
         verbose_name = "Door Item"
         verbose_name_plural = "Door Items"
@@ -101,4 +131,39 @@ class DoorLineItem(LineItem):
         return (self.width * self.height) / 144  # Convert to square feet
     
     def __str__(self):
-        return f"Door {self.id} - {self.wood_stock.name} {self.style.description}" 
+        return f"Door {self.id} - {self.wood_stock.name} {self.style.name}"
+
+
+class RailDefaults(BaseModel):
+    """Model for default rail sizes for doors."""
+    top = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Default top rail size in inches"
+    )
+    bottom = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Default bottom rail size in inches"
+    )
+    left = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Default left rail size in inches"
+    )
+    right = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Default right rail size in inches"
+    )
+    
+    class Meta:
+        verbose_name = "Rail Defaults"
+        verbose_name_plural = "Rail Defaults"
+    
+    def __str__(self):
+        return f"Rail Defaults: T:{self.top}, B:{self.bottom}, L:{self.left}, R:{self.right}"

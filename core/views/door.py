@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from ..forms import DoorForm
-from ..models.door import WoodStock, EdgeProfile, PanelRise, Style
+from ..models.door import WoodStock, EdgeProfile, PanelRise, Style, RailDefaults
 from decimal import Decimal
 
 @require_http_methods(["GET", "POST"])
@@ -67,6 +67,8 @@ def add_door(request):
             edge_profile = EdgeProfile.objects.get(id=edge_profile_id)
             panel_rise = PanelRise.objects.get(id=panel_rise_id)  
             style = Style.objects.get(id=style_id)
+            # Get rail defaults
+            rail_defaults = RailDefaults.objects.first()
         except Exception as e:
             return JsonResponse({'error': f'Invalid reference data: {str(e)}'}, status=400)
             
@@ -85,6 +87,12 @@ def add_door(request):
         # Calculate total price (price_per_unit * quantity)
         total_price = price_per_unit * quantity
         
+        # Default rail values if no rail_defaults exist
+        rail_top = str(rail_defaults.top) if rail_defaults else '2.50'
+        rail_bottom = str(rail_defaults.bottom) if rail_defaults else '2.50'
+        rail_left = str(rail_defaults.left) if rail_defaults else '2.50'
+        rail_right = str(rail_defaults.right) if rail_defaults else '2.50'
+        
         # Create door item
         door_item = {
             'type': 'door',
@@ -96,7 +104,11 @@ def add_door(request):
             'height': str(height),
             'quantity': str(quantity),
             'price_per_unit': str(price_per_unit),
-            'total_price': str(total_price)
+            'total_price': str(total_price),
+            'rail_top': rail_top,
+            'rail_bottom': rail_bottom,
+            'rail_left': rail_left,
+            'rail_right': rail_right
         }
         
         # Add the door to the session order

@@ -1,22 +1,26 @@
+from ftplib import all_errors
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from ..forms import OrderForm
 from ..models import Order
 from django.http import HttpResponse, JsonResponse
 from ..models.customer import Customer
-from ..models.door import DoorLineItem, WoodStock, EdgeProfile, PanelRise, Style
+from ..models.door import DoorLineItem, RailDefaults
 from django.db import transaction
 from decimal import Decimal
+from django.template.loader import render_to_string
+from weasyprint import HTML
 
 def orders(request):
-    orders = Order.confirmed.all().select_related('customer')
+    all_orders = Order.confirmed.all().select_related('customer')
     return render(request, 'order/orders.html', {
-        'orders': orders,
+        'orders': all_orders,
         'title': 'Orders'
     })
 
-def order_detail(request, id):
-    order = get_object_or_404(Order.confirmed, id=id)
+def order_detail(request, order_id):
+    order = get_object_or_404(Order.confirmed, id=order_id)
     
     # Get all door line items related to this order
     door_items = DoorLineItem.objects.filter(order=order).select_related(
@@ -51,6 +55,9 @@ def create_order(request):
                     # Save the order
                     order = form.save()
                     
+                    # Get rail defaults (use the first one available)
+                    rail_defaults = RailDefaults.objects.first()
+                    
                     # Process line items from session
                     line_items = request.session['current_order'].get('items', [])
                     for item in line_items:
@@ -61,7 +68,7 @@ def create_order(request):
                             
                             price_per_unit = Decimal(item['price_per_unit'])
 
-                            # Create door line item
+                            # Create door line item with rail default values
                             door_item = DoorLineItem(
                                 order=order,
                                 wood_stock_id=item['wood_stock']['id'],
@@ -72,6 +79,12 @@ def create_order(request):
                                 height=height,
                                 quantity=item['quantity'],
                                 price_per_unit=price_per_unit,
+                                type='door',
+                                # Add rail default values
+                                rail_top=rail_defaults.top if rail_defaults else Decimal('2.50'),
+                                rail_bottom=rail_defaults.bottom if rail_defaults else Decimal('2.50'),
+                                rail_left=rail_defaults.left if rail_defaults else Decimal('2.50'),
+                                rail_right=rail_defaults.right if rail_defaults else Decimal('2.50'),
                             )
                             door_item.save()
                         # Handle other item types here (drawers, etc.) as needed
@@ -86,7 +99,7 @@ def create_order(request):
                         request.session.modified = True
                     
                     messages.success(request, 'Order created successfully!')
-                    return redirect('order_detail', id=order.id)
+                    return redirect('order_detail', order_id=order.id)
             except Exception as e:
                 # Log the error for debugging (would implement proper logging in production)
                 print(f"Error creating order: {str(e)}")
@@ -100,8 +113,8 @@ def create_order(request):
         'title': 'Create Order'
     })
 
-def delete_order(request, id):
-    order = get_object_or_404(Order.confirmed, id=id)
+def delete_order(request, order_id):
+    order = get_object_or_404(Order.confirmed, id=order_id)
     if request.method == 'POST':
         order.delete()
         messages.success(request, 'Order deleted successfully!')
@@ -189,31 +202,34 @@ def order_search(request):
         orders_query = orders_query.filter(id__lte=int(max_id))
     
     # Order by descending order date (newest first)
-    orders = orders_query.order_by('-order_date')
+    all_orders = orders_query.order_by('-order_date')
     
     # Return only the table rows, not a full page
     return render(request, 'order/partials/order_rows.html', {
-        'orders': orders
+        'orders': all_orders
     })
 
-def quote_search(request):
-    min_id = request.GET.get('min_id', '')
-    max_id = request.GET.get('max_id', '')
+
+def generate_order_pdf(request, order_id):
+    """Generate a PDF version of the order for printing."""
+    order = get_object_or_404(Order.confirmed, id=order_id)
     
-    # Start with all quotes
-    quotes_query = Order.quotes.all().select_related('customer')
+    # Get all door line items related to this order
+    door_items = DoorLineItem.objects.filter(order=order).select_related(
+        'wood_stock', 'edge_profile', 'panel_rise', 'style'
+    )
     
-    # Apply filters if provided
-    if min_id and min_id.isdigit():
-        quotes_query = quotes_query.filter(id__gte=int(min_id))
+    # Render the HTML template
+    html_string = render_to_string('pdf/order_pdf.html', {
+        'order': order,
+        'door_items': door_items,
+    })
     
-    if max_id and max_id.isdigit():
-        quotes_query = quotes_query.filter(id__lte=int(max_id))
+    # Create a PDF file
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="order_{order.order_number}.pdf"'
     
-    # Order by descending order date (newest first)
-    quotes = quotes_query.order_by('-order_date')
+    # Generate PDF
+    HTML(string=html_string).write_pdf(response)
     
-    # Return only the table rows, not a full page
-    return render(request, 'quote/partials/quote_rows.html', {
-        'quotes': quotes
-    }) 
+    return response 

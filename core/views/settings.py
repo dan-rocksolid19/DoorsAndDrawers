@@ -1,9 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.contrib import messages
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-from ..models import Style, PanelType, Design, WoodStock, EdgeProfile, PanelRise
+from ..models import Style, PanelType, Design, WoodStock, EdgeProfile, PanelRise, RailDefaults
 
 def door_settings(request):
     """
@@ -15,6 +13,7 @@ def door_settings(request):
     edge_profiles = EdgeProfile.objects.all()
     panel_rises = PanelRise.objects.all()
     panel_types = PanelType.objects.all()
+    rail_defaults = RailDefaults.objects.first()  # Get the first (should be only one) rail defaults
     
     context = {
         'styles': styles,
@@ -23,6 +22,7 @@ def door_settings(request):
         'edge_profiles': edge_profiles,
         'panel_rises': panel_rises,
         'panel_types': panel_types,
+        'rail_defaults': rail_defaults,
         'title': 'Door Settings'
     }
     

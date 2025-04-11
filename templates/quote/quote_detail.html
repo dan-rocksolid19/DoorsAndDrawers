@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto p-6">
+<div class="p-6">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-indigo-900">{{ title }}</h1>
         <div class="space-x-4">
+            <a href="{% url 'quote_pdf' quote.id %}" class="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Print Quote
+            </a>
             <a href="{% url 'convert_to_order' quote.id %}" class="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                 Convert to Order
             </a>
@@ -111,6 +114,9 @@
                             Dimensions
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Rails (T×B×L×R)
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Quantity
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -138,6 +144,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ item.width }} × {{ item.height }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ item.quantity }}

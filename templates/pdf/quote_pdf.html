@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quote #{{ quote.order_number }}</title>
+    <style>
+        @page {
+            size: letter portrait;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        .order-number {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .info-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .info-item {
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            font-size: 11px;
+            color: #666;
+        }
+        .info-value {
+            margin-top: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px;
+            font-size: 11px;
+            border-bottom: 1px solid #ccc;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+        }
+        .totals-table {
+            width: 50%;
+            margin-left: auto;
+        }
+        .totals-table td {
+            padding: 5px;
+        }
+        .totals-table .total-row {
+            font-weight: bold;
+            border-top: 2px solid #ccc;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+        .quote-status {
+            color: #047857;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Doors and Drawers</div>
+        <div class="order-number">Quote #{{ quote.order_number }}</div>
+        <div class="quote-status">Quote - Valid for 30 days</div>
+    </div>
+
+    <div class="info-section">
+        <div class="info-grid">
+            <div>
+                <div class="section-title">Quote Information</div>
+                <div class="info-item">
+                    <div class="info-label">Quote Date</div>
+                    <div class="info-value">{{ quote.order_date }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Created At</div>
+                    <div class="info-value">{{ quote.created_at }}</div>
+                </div>
+            </div>
+            <div>
+                <div class="section-title">Customer Information</div>
+                <div class="info-item">
+                    <div class="info-label">Company</div>
+                    <div class="info-value">{{ quote.customer.company_name|title }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Contact</div>
+                    <div class="info-value">{{ quote.customer.first_name|capfirst }} {{ quote.customer.last_name|capfirst }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Billing Address</div>
+                    <div class="info-value">
+                        {{ quote.billing_address1|title }}
+                        {% if quote.billing_address2 %}
+                            <br>{{ quote.billing_address2|title }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if quote.notes %}
+    <div class="info-section">
+        <div class="section-title">Quote Notes</div>
+        <p>{{ quote.notes|capfirst }}</p>
+    </div>
+    {% endif %}
+
+    <div class="info-section">
+        <div class="section-title">Line Items</div>
+        {% if door_items %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Wood Type</th>
+                    <th>Edge Profile</th>
+                    <th>Panel Rise</th>
+                    <th>Style</th>
+                    <th>Dimensions (W×H)</th>
+                    <th>Rails (T×B×L×R)</th>
+                    <th>Quantity</th>
+                    <th>Price/Unit</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in door_items %}
+                <tr>
+                    <td>{{ item.get_type_display }}</td>
+                    <td>{{ item.wood_stock.name }}</td>
+                    <td>{{ item.edge_profile.name }}</td>
+                    <td>{{ item.panel_rise.name }}</td>
+                    <td>{{ item.style.name }}</td>
+                    <td>{{ item.width }} × {{ item.height }}</td>
+                    <td>{{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.price_per_unit|floatformat:2 }}</td>
+                    <td>${{ item.total_price|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No line items found for this quote.</p>
+        {% endif %}
+    </div>
+
+    <div class="info-section">
+        <div class="section-title">Quote Summary</div>
+        <table class="totals-table">
+            <tr>
+                <td>Items Total:</td>
+                <td>${{ quote.item_total|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Discount:</td>
+                <td>-${{ quote.discount_amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Surcharge:</td>
+                <td>${{ quote.surcharge_amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Shipping:</td>
+                <td>${{ quote.shipping_amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Subtotal:</td>
+                <td>${{ quote.subtotal|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Tax:</td>
+                <td>${{ quote.tax_amount|floatformat:2 }}</td>
+            </tr>
+            <tr class="total-row">
+                <td>Grand Total:</td>
+                <td>${{ quote.total|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Generated on {% now "F j, Y" %}</p>
+        <p>This is a quote only. Not an invoice or confirmation of order.</p>
+    </div>
+</body>
+</html> 

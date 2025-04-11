@@ -1,5 +1,5 @@
 from .base import BaseModel
-from .customer import Customer
+from .customer import Customer, CustomerDefaults
 from .order import Order, QuoteManager, ConfirmedManager
 from .line_item import LineItem
 from .door import (
@@ -9,12 +9,14 @@ from .door import (
     PanelType, 
     PanelRise, 
     Style, 
-    DoorLineItem
+    DoorLineItem,
+    RailDefaults
 )
 
 __all__ = [
     'BaseModel',
     'Customer',
+    'CustomerDefaults',
     'Order',
     'QuoteManager',
     'ConfirmedManager',
@@ -26,4 +28,5 @@ __all__ = [
     'PanelRise',
     'Style',
     'DoorLineItem',
+    'RailDefaults',
 ] 
