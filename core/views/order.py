@@ -52,10 +52,14 @@ def order_detail(request, order_id):
         'wood_stock', 'edge_type', 'bottom'
     )
     
+    # Get all generic line items related to this order
+    generic_items = order.generic_items.all()
+    
     return render(request, 'order/order_detail.html', {
         'order': order,
         'door_items': door_items,
         'drawer_items': drawer_items,
+        'generic_items': generic_items,
         'title': f'Order {order.order_number}'
     })
 
@@ -88,7 +92,11 @@ def create_order(request):
                             # Get door components
                             width = Decimal(item['width'])
                             height = Decimal(item['height'])
-                            price_per_unit = Decimal(item['price_per_unit'])
+                            quantity = int(item['quantity'])
+                            custom_price = item.get('custom_price', False)
+                            
+                            # Only use the stored price_per_unit if custom_price is True
+                            price_per_unit = Decimal(item['price_per_unit']) if custom_price else Decimal('0.00')
 
                             # Create door line item using values from the form/session
                             door_item = DoorLineItem(
@@ -99,14 +107,15 @@ def create_order(request):
                                 style_id=item['style']['id'],
                                 width=width,
                                 height=height,
-                                quantity=item['quantity'],
+                                quantity=quantity,
                                 price_per_unit=price_per_unit,
-                                type='door',
                                 # Use rail dimensions directly from session data
                                 rail_top=Decimal(item['rail_top']),
                                 rail_bottom=Decimal(item['rail_bottom']),
                                 rail_left=Decimal(item['rail_left']),
-                                rail_right=Decimal(item['rail_right'])
+                                rail_right=Decimal(item['rail_right']),
+                                # Save custom price flag if it exists
+                                custom_price=custom_price
                             )
                             door_item.save()
                         # Handle other item types here (drawers, etc.) as needed
@@ -115,7 +124,11 @@ def create_order(request):
                             width = Decimal(item['width'])
                             height = Decimal(item['height'])
                             depth = Decimal(item['depth'])
-                            price_per_unit = Decimal(item['price_per_unit'])
+                            quantity = int(item['quantity'])
+                            custom_price = item.get('custom_price', False)
+                            
+                            # Only use the stored price_per_unit if custom_price is True
+                            price_per_unit = Decimal(item['price_per_unit']) if custom_price else Decimal('0.00')
 
                             # Import here to avoid circular imports
                             from ..models.drawer import DrawerLineItem
@@ -129,13 +142,37 @@ def create_order(request):
                                 width=width,
                                 height=height,
                                 depth=depth,
-                                quantity=item['quantity'],
+                                quantity=quantity,
                                 price_per_unit=price_per_unit,
                                 undermount=item.get('undermount', False),
                                 finishing=item.get('finishing', False),
-                                type='drawer'
+                                # Save custom price flag if it exists
+                                custom_price=custom_price
                             )
                             drawer_item.save()
+                        # Handle generic items
+                        elif item.get('type') == 'other':
+                            # Get item details
+                            name = item.get('name')
+                            quantity = int(item.get('quantity'))
+                            custom_price = item.get('custom_price', False)
+                            
+                            # Only use the stored price_per_unit if custom_price is True
+                            price_per_unit = Decimal(item.get('price_per_unit'))
+                            
+                            # Import here to avoid circular imports
+                            from ..models.line_item import GenericLineItem
+                            
+                            # Create generic line item
+                            generic_item = GenericLineItem(
+                                order=order,
+                                name=name,
+                                quantity=quantity,
+                                price_per_unit=price_per_unit,
+                                # Save custom price flag if it exists
+                                custom_price=custom_price
+                            )
+                            generic_item.save()
                     
                     # Calculate and save order totals
                     order.calculate_totals()
@@ -362,7 +399,7 @@ def remove_line_item(request, item_id):
 
 def generate_order_pdf(request, order_id):
     """Generate a PDF version of the order for printing."""
-    order = get_object_or_404(Order.confirmed, id=order_id)
+    order = get_object_or_404(Order.objects.filter(is_quote=False), id=order_id)
     
     # Get all door line items related to this order
     door_items = DoorLineItem.objects.filter(order=order).select_related(
@@ -374,11 +411,15 @@ def generate_order_pdf(request, order_id):
         'wood_stock', 'edge_type', 'bottom'
     )
     
+    # Get all generic line items related to this order
+    generic_items = order.generic_items.all()
+    
     # Render the HTML template
     html_string = render_to_string('pdf/order_pdf.html', {
         'order': order,
         'door_items': door_items,
         'drawer_items': drawer_items,
+        'generic_items': generic_items
     })
     
     # Create a PDF file

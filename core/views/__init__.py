@@ -12,7 +12,8 @@ from .quote import (
     delete_quote, convert_to_order
 )
 from .line_item import (
-    settings, door_settings, drawer_settings
+    settings, door_settings, drawer_settings,
+    generic_item_form
 )
 from .door import (
     door_form, add_door

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from ..forms import DoorForm
-from ..models.door import WoodStock, EdgeProfile, PanelRise, Style, RailDefaults
+from ..models.door import WoodStock, EdgeProfile, PanelRise, Style, RailDefaults, DoorLineItem
 from decimal import Decimal
 
 @require_http_methods(["GET", "POST"])
@@ -48,52 +48,46 @@ def add_door(request):
         # Get cleaned data from the form
         cleaned_data = form.cleaned_data
         
-        # Extract door specifications from cleaned data
-        wood_stock = cleaned_data['wood_stock']
-        edge_profile = cleaned_data['edge_profile']
-        panel_rise = cleaned_data['panel_rise']
-        style = cleaned_data['style']
-        width = cleaned_data['width']
-        height = cleaned_data['height']
-        quantity = cleaned_data['quantity']
+        # Extract custom price information from POST data (not part of the form model)
+        custom_price = request.POST.get('custom_price') == 'on'
+        price_per_unit_manual = request.POST.get('price_per_unit_manual')
         
-        # Extract rail dimensions
-        rail_top = cleaned_data['rail_top']
-        rail_bottom = cleaned_data['rail_bottom']
-        rail_left = cleaned_data['rail_left']
-        rail_right = cleaned_data['rail_right']
-            
-        # Calculate price using the same logic as in create_order
-        base_price = style.price
+        # Create a DoorLineItem instance without saving it to the database
+        # This will be used for price calculation
+        door_item_model = DoorLineItem(**cleaned_data)
         
-        # Determine woodstock price based on panel type
-        if style.panel_type.use_flat_panel_price:
-            woodstock_price = wood_stock.flat_panel_price
+        # Apply custom price if provided
+        if custom_price and price_per_unit_manual:
+            try:
+                door_item_model.custom_price = True
+                door_item_model.price_per_unit = Decimal(price_per_unit_manual)
+            except (ValueError, TypeError):
+                # If price_per_unit_manual is not a valid decimal, use calculated price instead
+                door_item_model.custom_price = False
         else:
-            woodstock_price = wood_stock.raised_panel_price
-            
-        # Calculate price per unit (base_price + twice woodstock price)
-        price_per_unit = base_price + (woodstock_price * 2)
+            door_item_model.custom_price = False
+            door_item_model.price_per_unit = door_item_model.calculate_price()
         
-        # Calculate total price (price_per_unit * quantity)
-        total_price = price_per_unit * quantity
+        # Get the calculated price from the model
+        price = door_item_model.price
         
-        # Create door item
+        # Create door item dictionary for session storage
         door_item = {
             'type': 'door',
-            'wood_stock': {'id': wood_stock.pk, 'name': wood_stock.name},
-            'edge_profile': {'id': edge_profile.pk, 'name': edge_profile.name},
-            'panel_rise': {'id': panel_rise.pk, 'name': panel_rise.name},
-            'style': {'id': style.pk, 'name': style.name},
-            'width': str(width),
-            'height': str(height),
-            'quantity': str(quantity),
-            'price_per_unit': str(price_per_unit),
-            'total_price': str(total_price),
-            'rail_top': str(rail_top),
-            'rail_bottom': str(rail_bottom),
-            'rail_left': str(rail_left),
-            'rail_right': str(rail_right)
+            'wood_stock': {'id': cleaned_data['wood_stock'].pk, 'name': cleaned_data['wood_stock'].name},
+            'edge_profile': {'id': cleaned_data['edge_profile'].pk, 'name': cleaned_data['edge_profile'].name},
+            'panel_rise': {'id': cleaned_data['panel_rise'].pk, 'name': cleaned_data['panel_rise'].name},
+            'style': {'id': cleaned_data['style'].pk, 'name': cleaned_data['style'].name},
+            'width': str(cleaned_data['width']),
+            'height': str(cleaned_data['height']),
+            'quantity': str(cleaned_data['quantity']),
+            'price_per_unit': str(door_item_model.price_per_unit),
+            'total_price': str(price),
+            'rail_top': str(cleaned_data['rail_top']),
+            'rail_bottom': str(cleaned_data['rail_bottom']),
+            'rail_left': str(cleaned_data['rail_left']),
+            'rail_right': str(cleaned_data['rail_right']),
+            'custom_price': custom_price
         }
         
         # Add the door to the session order

@@ -77,6 +77,23 @@
                 {% endif %}
             </div>
             
+            <!-- Custom Price Toggle -->
+            <div class="form-group mt-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="drawer_custom_price" name="custom_price" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <label for="drawer_custom_price" class="ml-2 block text-sm font-medium text-gray-700">
+                        Use Custom Price
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Custom Price Value -->
+            <div class="form-group mt-2 drawer-custom-price-field" style="display: none;">
+                <label for="drawer_price_per_unit_manual" class="block text-sm font-medium text-gray-700">Price Per Unit ($)</label>
+                <input type="number" id="drawer_price_per_unit_manual" name="price_per_unit_manual" step="0.01" min="0.01" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                <span class="text-xs text-gray-500">Enter a custom price per unit</span>
+            </div>
+            
             <!-- Additional Options -->
             <h3 class="text-sm font-medium text-gray-700 mt-2">Options</h3>
             <div class="grid grid-cols-2 gap-4">
@@ -97,6 +114,7 @@
     
     <div class="mt-6">
         <button type="button" 
+                id="add-drawer-button"
                 class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 hx-post="{% url 'new_drawer' %}"
                 hx-include="#drawer-form"
@@ -106,3 +124,46 @@
         </button>
     </div>
 </div>
+
+<script>
+    // Run the function immediately and on DOM content loaded
+    (function setupCustomPriceToggle() {
+        const customPriceCheckbox = document.getElementById('drawer_custom_price');
+        const customPriceField = document.querySelector('.drawer-custom-price-field');
+        
+        if (customPriceCheckbox && customPriceField) {
+            // Set initial state
+            customPriceField.style.display = customPriceCheckbox.checked ? 'block' : 'none';
+            
+            // Add event listener
+            customPriceCheckbox.addEventListener('change', function() {
+                customPriceField.style.display = this.checked ? 'block' : 'none';
+                console.log('Drawer custom price toggled:', this.checked);
+            });
+            
+            console.log('Drawer custom price toggle initialized');
+        } else {
+            console.log('Drawer custom price elements not found', {
+                checkbox: customPriceCheckbox,
+                field: customPriceField
+            });
+        }
+    })();
+    
+    // Also run on DOM content loaded in case the script loads before elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const customPriceCheckbox = document.getElementById('drawer_custom_price');
+        const customPriceField = document.querySelector('.drawer-custom-price-field');
+        
+        if (customPriceCheckbox && customPriceField) {
+            // Set initial state
+            customPriceField.style.display = customPriceCheckbox.checked ? 'block' : 'none';
+            
+            // Add event listener
+            customPriceCheckbox.addEventListener('change', function() {
+                customPriceField.style.display = this.checked ? 'block' : 'none';
+                console.log('Drawer custom price toggled (DOMContentLoaded):', this.checked);
+            });
+        }
+    });
+</script>

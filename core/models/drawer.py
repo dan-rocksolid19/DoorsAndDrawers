@@ -140,13 +140,12 @@ class DrawerLineItem(LineItem):
         return f"{self.width}″ × {self.height}″ × {self.depth}″ Drawer"
     
     def calculate_price(self):
-        """Calculate the price of the drawer based on dimensions and options"""
-        # Base calculation from dimensions
+        """Calculate the unit price of the drawer based on dimensions and options"""
+        # Calculate and return the base unit price
         return self.wood_stock.price + self.bottom.price
     
     def save(self, *args, **kwargs):
-        # Update price if not custom
-        # if not self.custom_price:
-        #     self.price = self.calculate_price()
-        
+        # Always set type to 'drawer'
+        self.type = 'drawer'
+        # Call the parent save method to handle price calculations
         super().save(*args, **kwargs) 

@@ -1,6 +1,7 @@
 from django.db import models
 from itertools import chain
 from .base import BaseModel
+from .line_item import LineItem, GenericLineItem
 
 class QuoteManager(models.Manager):
     def get_queryset(self):
@@ -95,7 +96,8 @@ class Order(BaseModel):
         """Get all line items for this order, regardless of type"""
         doors = self.door_items.all()
         drawers = self.drawer_items.all()
-        return list(chain(doors, drawers))
+        generics = self.generic_items.all()
+        return list(chain(doors, drawers, generics))
     
     def get_line_items_by_type(self, item_type):
         """Get line items filtered by type"""
@@ -103,18 +105,21 @@ class Order(BaseModel):
             return self.door_items.all()
         elif item_type == 'drawer':
             return self.drawer_items.all()
+        elif item_type == 'other':
+            return self.generic_items.all()
         else:
             return []
     
     def count_total_items(self):
         """Count all line items"""
-        return self.door_items.count() + self.drawer_items.count()
+        return self.door_items.count() + self.drawer_items.count() + self.generic_items.count()
             
     def get_item_types_summary(self):
         """Get a summary of item types and counts"""
         return {
             'doors': self.door_items.count(),
             'drawers': self.drawer_items.count(),
+            'misc': self.generic_items.count(),
             'total': self.count_total_items()
         }
 
@@ -123,7 +128,8 @@ class Order(BaseModel):
         """Calculate the sum of all line items"""
         door_total = sum(item.total_price for item in self.door_items.all())
         drawer_total = sum(item.total_price for item in self.drawer_items.all())
-        return door_total + drawer_total
+        generic_total = sum(item.total_price for item in self.generic_items.all())
+        return door_total + drawer_total + generic_total
 
     @property
     def subtotal(self):

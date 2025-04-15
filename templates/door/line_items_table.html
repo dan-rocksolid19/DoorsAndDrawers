@@ -41,13 +41,19 @@
                     {{ item.type|title }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ item.wood_stock.name|default:"Unknown" }}
+                    {% if item.type == 'other' %}
+                        N/A
+                    {% else %}
+                        {{ item.wood_stock.name|default:"Unknown" }}
+                    {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {% if item.type == 'drawer' %}
                         {{ item.width }} × {{ item.height }} × {{ item.depth }}
-                    {% else %}
+                    {% elif item.type == 'door' %}
                         {{ item.width }} × {{ item.height }}
+                    {% else %}
+                        N/A
                     {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -56,11 +62,15 @@
                             Edge: {{ item.edge_type.name|default:"Unknown" }}<br>
                             Bottom: {{ item.bottom.name|default:"Unknown" }}
                         </span>
-                    {% else %}
+                    {% elif item.type == 'door' %}
                         <span class="inline-block">
                             Edge: {{ item.edge_profile.name|default:"Unknown" }}<br>
                             Panel: {{ item.panel_rise.name|default:"Unknown" }}<br>
                             Style: {{ item.style.name|default:"Unknown" }}
+                        </span>
+                    {% else %}
+                        <span class="inline-block">
+                            {{ item.name }}
                         </span>
                     {% endif %}
                 </td>
@@ -68,8 +78,10 @@
                     {% if item.type == 'drawer' %}
                         {% if item.undermount %}Undermount<br>{% endif %}
                         {% if item.finishing %}Finishing{% endif %}
-                    {% else %}
+                    {% elif item.type == 'door' %}
                         Rails: {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}
+                    {% else %}
+                        Miscellaneous
                     {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

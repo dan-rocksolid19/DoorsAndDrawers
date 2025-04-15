@@ -46,7 +46,7 @@ def add_drawer(request):
         # Get cleaned data from the form
         cleaned_data = form.cleaned_data
         
-        # Extract drawer specifications from cleaned data
+        # Extract drawer specifications and custom price information
         wood_stock = cleaned_data['wood_stock']
         edge_type = cleaned_data['edge_type']
         bottom = cleaned_data['bottom']
@@ -56,22 +56,30 @@ def add_drawer(request):
         quantity = cleaned_data['quantity']
         undermount = cleaned_data['undermount']
         finishing = cleaned_data['finishing']
-            
-        # Calculate a simple price (this would be replaced with your actual pricing logic)
-        base_price = Decimal('10.00')  # Basic drawer price
-        # Add woodstock price
-        price_per_unit = base_price + wood_stock.price + bottom.price
         
-        # Apply additional costs if applicable
-        if undermount:
-            price_per_unit += Decimal('5.00')  # Extra cost for undermount
-        if finishing:
-            price_per_unit += Decimal('3.00')  # Extra cost for finishing
+        # Get custom price information (using the drawer-specific field names)
+        custom_price = request.POST.get('custom_price') == 'on'
+        price_per_unit_manual = request.POST.get('price_per_unit_manual')
         
-        # Calculate total price
-        total_price = price_per_unit * quantity
+        # Create a DrawerLineItem model instance for price calculation
+        drawer_item_model=DrawerLineItem(**cleaned_data)
+
+        # Apply custom price if provided
+        if custom_price and price_per_unit_manual:
+            try:
+                drawer_item_model.custom_price = True
+                drawer_item_model.price_per_unit = Decimal(price_per_unit_manual)
+            except (ValueError, TypeError):
+                # If price_per_unit_manual is not a valid decimal, use calculated price
+                drawer_item_model.custom_price = False
+        else:
+            drawer_item_model.custom_price = False
+            drawer_item_model.price_per_unit = drawer_item_model.calculate_price()
+
+        # Get the calculated price
+        price = drawer_item_model.price
         
-        # Create drawer item
+        # Create drawer item for session storage
         drawer_item = {
             'type': 'drawer',
             'wood_stock': {'id': wood_stock.pk, 'name': wood_stock.name},
@@ -83,8 +91,9 @@ def add_drawer(request):
             'quantity': str(quantity),
             'undermount': undermount,
             'finishing': finishing,
-            'price_per_unit': str(price_per_unit),
-            'total_price': str(total_price)
+            'price_per_unit': str(drawer_item_model.price_per_unit),
+            'total_price': str(price),
+            'custom_price': custom_price
         }
         
         # Add the drawer to the session order

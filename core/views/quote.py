@@ -48,10 +48,14 @@ def quote_detail(request, quote_id):
         'wood_stock', 'edge_type', 'bottom'
     )
     
+    # Get all generic line items related to this quote
+    generic_items = quote.generic_items.all()
+    
     return render(request, 'quote/quote_detail.html', {
         'quote': quote,
         'door_items': door_items,
         'drawer_items': drawer_items,
+        'generic_items': generic_items,
         'title': f'Quote {quote.order_number}'
     })
 
@@ -87,8 +91,11 @@ def create_quote(request):
                             # Get door components
                             width = Decimal(item['width'])
                             height = Decimal(item['height'])
+                            quantity = int(item['quantity'])
+                            custom_price = item.get('custom_price', False)
                             
-                            price_per_unit = Decimal(item['price_per_unit'])
+                            # Only use the stored price_per_unit if custom_price is True
+                            price_per_unit = Decimal(item['price_per_unit']) if custom_price else Decimal('0.00')
 
                             # Create door line item with rail default values
                             door_item = DoorLineItem(
@@ -99,14 +106,15 @@ def create_quote(request):
                                 style_id=item['style']['id'],
                                 width=width,
                                 height=height,
-                                quantity=item['quantity'],
+                                quantity=quantity,
                                 price_per_unit=price_per_unit,
-                                type='door',
                                 # Add rail default values
                                 rail_top=rail_defaults.top if rail_defaults else Decimal('2.50'),
                                 rail_bottom=rail_defaults.bottom if rail_defaults else Decimal('2.50'),
                                 rail_left=rail_defaults.left if rail_defaults else Decimal('2.50'),
                                 rail_right=rail_defaults.right if rail_defaults else Decimal('2.50'),
+                                # Save custom price flag if it exists
+                                custom_price=custom_price
                             )
                             door_item.save()
                         # Handle other item types here (drawers, etc.) as needed
@@ -115,7 +123,11 @@ def create_quote(request):
                             width = Decimal(item['width'])
                             height = Decimal(item['height'])
                             depth = Decimal(item['depth'])
-                            price_per_unit = Decimal(item['price_per_unit'])
+                            quantity = int(item['quantity'])
+                            custom_price = item.get('custom_price', False)
+                            
+                            # Only use the stored price_per_unit if custom_price is True
+                            price_per_unit = Decimal(item['price_per_unit']) if custom_price else Decimal('0.00')
 
                             # Import here to avoid circular imports
                             from ..models.drawer import DrawerLineItem
@@ -129,13 +141,37 @@ def create_quote(request):
                                 width=width,
                                 height=height,
                                 depth=depth,
-                                quantity=item['quantity'],
+                                quantity=quantity,
                                 price_per_unit=price_per_unit,
                                 undermount=item.get('undermount', False),
                                 finishing=item.get('finishing', False),
-                                type='drawer'
+                                # Save custom price flag if it exists
+                                custom_price=custom_price
                             )
                             drawer_item.save()
+                        # Handle generic items
+                        elif item.get('type') == 'other':
+                            # Get item details
+                            name = item.get('name')
+                            quantity = int(item.get('quantity'))
+                            custom_price = item.get('custom_price', False)
+                            
+                            # Only use the stored price_per_unit if custom_price is True
+                            price_per_unit = Decimal(item.get('price_per_unit'))
+                            
+                            # Import here to avoid circular imports
+                            from ..models.line_item import GenericLineItem
+                            
+                            # Create generic line item
+                            generic_item = GenericLineItem(
+                                order=quote,
+                                name=name,
+                                quantity=quantity,
+                                price_per_unit=price_per_unit,
+                                # Save custom price flag if it exists
+                                custom_price=custom_price
+                            )
+                            generic_item.save()
                     
                     # Calculate and save quote totals
                     quote.calculate_totals()
@@ -259,11 +295,15 @@ def generate_quote_pdf(request, quote_id):
         'wood_stock', 'edge_type', 'bottom'
     )
     
+    # Get all generic line items related to this quote
+    generic_items = quote.generic_items.all()
+    
     # Render the HTML template
     html_string = render_to_string('pdf/quote_pdf.html', {
         'quote': quote,
         'door_items': door_items,
-        'drawer_items': drawer_items
+        'drawer_items': drawer_items,
+        'generic_items': generic_items
     })
     
     # Create a PDF file

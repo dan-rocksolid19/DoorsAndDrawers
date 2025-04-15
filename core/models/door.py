@@ -138,10 +138,27 @@ class DoorLineItem(LineItem):
         return (self.width * self.height) / 144  # Convert to square feet
 
     def calculate_price(self):
-        pass
+        """Calculate the unit price based on door specifications."""
+        # Get base price from style
+        base_price = self.style.price
+        
+        # Determine woodstock price based on panel type
+        if self.style.panel_type.use_flat_panel_price:
+            woodstock_price = self.wood_stock.flat_panel_price
+        else:
+            woodstock_price = self.wood_stock.raised_panel_price
+            
+        # Calculate and return price per unit (base_price + twice woodstock price)
+        return base_price + (woodstock_price * 2)
     
     def __str__(self):
         return f"Door {self.id} - {self.wood_stock.name} {self.style.name}"
+
+    def save(self, *args, **kwargs):
+        # Always set type to 'door'
+        self.type = 'door'
+        # Call the parent save method to handle price calculations
+        super().save(*args, **kwargs)
 
 
 class RailDefaults(BaseModel):

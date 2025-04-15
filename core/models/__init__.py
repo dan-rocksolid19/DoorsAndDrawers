@@ -1,7 +1,7 @@
 from .base import BaseModel
 from .customer import Customer, CustomerDefaults
 from .order import Order, QuoteManager, ConfirmedManager
-from .line_item import LineItem
+from .line_item import LineItem, GenericLineItem
 from .door import (
     WoodStock, 
     Design, 
@@ -40,5 +40,6 @@ __all__ = [
     'DrawerEdgeType',
     'DrawerBottomSize',
     'DrawerPricing', 
-    'DrawerLineItem'
+    'DrawerLineItem',
+    'GenericLineItem'
 ] 

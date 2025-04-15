@@ -2,6 +2,7 @@ from .customer import CustomerForm
 from .order import BaseOrderForm, OrderForm, QuoteForm
 from .door import DoorForm
 from .drawer import DrawerForm
+from .generic import GenericItemForm
 
 __all__ = [
     'CustomerForm',
@@ -10,4 +11,5 @@ __all__ = [
     'QuoteForm',
     'DoorForm',
     'DrawerForm',
+    'GenericItemForm',
 ] 

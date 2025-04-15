@@ -8,5 +8,6 @@ urlpatterns = [
     path('quotes/', include('core.urls.quote')),
     path('doors/', include('core.urls.door')),
     path('drawers/', include('core.urls.drawer')),
+    path('generic/', include('core.urls.generic')),
     path('settings/', include('core.urls.settings')),
 ] 

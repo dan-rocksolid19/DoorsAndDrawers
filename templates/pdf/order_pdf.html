@@ -202,9 +202,7 @@
                     <td>{{ item.width }} × {{ item.height }} × {{ item.depth }}</td>
                     <td>
                         {% if item.undermount %}Undermount{% endif %}
-                        {% if item.finished_ends %}{% if item.undermount %}, {% endif %}Finished Ends{% endif %}
-                        {% if item.finished_back %}{% if item.undermount or item.finished_ends %}, {% endif %}Finished Back{% endif %}
-                        {% if item.finished_interior %}{% if item.undermount or item.finished_ends or item.finished_back %}, {% endif %}Finished Interior{% endif %}
+                        {% if item.finishing %}{% if item.undermount %}, {% endif %}Finished{% else %}Unfinished{% endif %}
                     </td>
                     <td>{{ item.quantity }}</td>
                     <td>${{ item.price_per_unit|floatformat:2 }}</td>
@@ -215,7 +213,33 @@
         </table>
         {% endif %}
         
-        {% if not door_items and not drawer_items %}
+        {% if generic_items %}
+        <h4>Miscellaneous Items</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price/Unit</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in generic_items %}
+                <tr>
+                    <td>{{ item.get_type_display }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.price_per_unit|floatformat:2 }}</td>
+                    <td>${{ item.total_price|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if not door_items and not drawer_items and not generic_items %}
         <p>No line items found for this order.</p>
         {% endif %}
     </div>
