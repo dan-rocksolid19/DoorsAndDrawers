@@ -1,0 +1,23 @@
+<tr id="rail-defaults-row">
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.top }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.bottom }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.left }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.right }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <a href="#" 
+           class="text-indigo-600 hover:text-indigo-900 mr-3"
+           hx-get="{% url 'edit_rail_defaults' %}"
+           hx-target="#rail-defaults-row"
+           hx-swap="outerHTML">
+            Edit
+        </a>
+    </td>
+</tr> 

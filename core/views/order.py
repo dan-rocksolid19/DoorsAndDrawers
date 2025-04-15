@@ -11,11 +11,31 @@ from django.db import transaction
 from decimal import Decimal
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from itertools import chain
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def orders(request):
-    all_orders = Order.confirmed.all().select_related('customer')
+    order_list = Order.confirmed.all().select_related('customer')
+    page = request.GET.get('page', 1)
+    
+    # Paginate results
+    paginator = Paginator(order_list, 10)  # 10 orders per page
+    
+    try:
+        orders = paginator.page(page)
+    except PageNotAnInteger:
+        orders = paginator.page(1)
+    except EmptyPage:
+        orders = paginator.page(paginator.num_pages)
+    
     return render(request, 'order/orders.html', {
-        'orders': all_orders,
+        'orders': orders,
+        'paginator': paginator,
+        'min_id': '',
+        'max_id': '',
+        'start_date': '',
+        'end_date': '',
+        'customer_search': '',
         'title': 'Orders'
     })
 
@@ -27,9 +47,15 @@ def order_detail(request, order_id):
         'wood_stock', 'edge_profile', 'panel_rise', 'style'
     )
     
+    # Get all drawer line items related to this order
+    drawer_items = order.drawer_items.all().select_related(
+        'wood_stock', 'edge_type', 'bottom'
+    )
+    
     return render(request, 'order/order_detail.html', {
         'order': order,
         'door_items': door_items,
+        'drawer_items': drawer_items,
         'title': f'Order {order.order_number}'
     })
 
@@ -55,9 +81,6 @@ def create_order(request):
                     # Save the order
                     order = form.save()
                     
-                    # Get rail defaults (use the first one available)
-                    rail_defaults = RailDefaults.objects.first()
-                    
                     # Process line items from session
                     line_items = request.session['current_order'].get('items', [])
                     for item in line_items:
@@ -65,10 +88,9 @@ def create_order(request):
                             # Get door components
                             width = Decimal(item['width'])
                             height = Decimal(item['height'])
-                            
                             price_per_unit = Decimal(item['price_per_unit'])
 
-                            # Create door line item with rail default values
+                            # Create door line item using values from the form/session
                             door_item = DoorLineItem(
                                 order=order,
                                 wood_stock_id=item['wood_stock']['id'],
@@ -80,14 +102,40 @@ def create_order(request):
                                 quantity=item['quantity'],
                                 price_per_unit=price_per_unit,
                                 type='door',
-                                # Add rail default values
-                                rail_top=rail_defaults.top if rail_defaults else Decimal('2.50'),
-                                rail_bottom=rail_defaults.bottom if rail_defaults else Decimal('2.50'),
-                                rail_left=rail_defaults.left if rail_defaults else Decimal('2.50'),
-                                rail_right=rail_defaults.right if rail_defaults else Decimal('2.50'),
+                                # Use rail dimensions directly from session data
+                                rail_top=Decimal(item['rail_top']),
+                                rail_bottom=Decimal(item['rail_bottom']),
+                                rail_left=Decimal(item['rail_left']),
+                                rail_right=Decimal(item['rail_right'])
                             )
                             door_item.save()
                         # Handle other item types here (drawers, etc.) as needed
+                        elif item.get('type') == 'drawer':
+                            # Get drawer components
+                            width = Decimal(item['width'])
+                            height = Decimal(item['height'])
+                            depth = Decimal(item['depth'])
+                            price_per_unit = Decimal(item['price_per_unit'])
+
+                            # Import here to avoid circular imports
+                            from ..models.drawer import DrawerLineItem
+                            
+                            # Create drawer line item using values from the form/session
+                            drawer_item = DrawerLineItem(
+                                order=order,
+                                wood_stock_id=item['wood_stock']['id'],
+                                edge_type_id=item['edge_type']['id'],
+                                bottom_id=item['bottom']['id'],
+                                width=width,
+                                height=height,
+                                depth=depth,
+                                quantity=item['quantity'],
+                                price_per_unit=price_per_unit,
+                                undermount=item.get('undermount', False),
+                                finishing=item.get('finishing', False),
+                                type='drawer'
+                            )
+                            drawer_item.save()
                     
                     # Calculate and save order totals
                     order.calculate_totals()
@@ -190,6 +238,10 @@ def get_customer_details(request):
 def order_search(request):
     min_id = request.GET.get('min_id', '')
     max_id = request.GET.get('max_id', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+    customer_query = request.GET.get('customer_search', '').strip()
+    page = request.GET.get('page', 1)
     
     # Start with all orders
     orders_query = Order.confirmed.all().select_related('customer')
@@ -201,14 +253,112 @@ def order_search(request):
     if max_id and max_id.isdigit():
         orders_query = orders_query.filter(id__lte=int(max_id))
     
-    # Order by descending order date (newest first)
-    all_orders = orders_query.order_by('-order_date')
+    # Apply date filters if provided
+    try:
+        if start_date:
+            orders_query = orders_query.filter(order_date__gte=start_date)
+        
+        if end_date:
+            orders_query = orders_query.filter(order_date__lte=end_date)
+    except ValueError:
+        # If date format is invalid, return all orders
+        pass
     
-    # Return only the table rows, not a full page
-    return render(request, 'order/partials/order_rows.html', {
-        'orders': all_orders
+    # Apply customer filter if provided
+    if customer_query:
+        orders_query = orders_query.filter(customer__company_name__icontains=customer_query)
+    
+    # Order by descending order date (newest first)
+    orders_query = orders_query.order_by('-order_date')
+    
+    # Paginate results
+    paginator = Paginator(orders_query, 10)  # 10 orders per page
+    
+    try:
+        orders = paginator.page(page)
+    except PageNotAnInteger:
+        orders = paginator.page(1)
+    except EmptyPage:
+        orders = paginator.page(paginator.num_pages)
+    
+    # Return the paginated results
+    return render(request, 'order/partials/order_results.html', {
+        'orders': orders,
+        'min_id': min_id,
+        'max_id': max_id,
+        'start_date': start_date,
+        'end_date': end_date,
+        'customer_search': customer_query,
+        'paginator': paginator
     })
 
+def remove_line_item(request, item_id):
+    """
+    Remove a line item from the current order
+    Handles both database-persisted items and session-based items
+    """
+    if request.method == 'DELETE':
+        # First, check if we're working with a session-based order
+        if 'current_order' in request.session:
+            # Handle session-based item deletion
+            try:
+                # In session, item_id is actually the index of the item in the array
+                index = int(item_id)
+                if 'items' in request.session['current_order'] and 0 <= index < len(request.session['current_order']['items']):
+                    # Remove the item at the specified index
+                    request.session['current_order']['items'].pop(index)
+                    # Mark session as modified
+                    request.session.modified = True
+                    # Return the updated line items table
+                    return render(request, 'door/line_items_table.html', {
+                        'items': request.session['current_order']['items']
+                    })
+                else:
+                    return HttpResponse("Item not found in session", status=404)
+            except (ValueError, IndexError):
+                return HttpResponse("Invalid item index", status=400)
+        
+        # If not using session, handle database-persisted items
+        order_id = request.session.get('order_id')
+        if not order_id:
+            return HttpResponse("No active order", status=400)
+        
+        order = get_object_or_404(Order, id=order_id)
+        
+        # Find and remove the line item
+        item_removed = False
+        
+        # Try to find and remove from door items
+        if hasattr(order, 'door_items'):
+            door_item = order.door_items.filter(id=item_id).first()
+            if door_item:
+                door_item.delete()
+                item_removed = True
+        
+        # If not found in door items, try drawer items
+        if not item_removed and hasattr(order, 'drawer_items'):
+            drawer_item = order.drawer_items.filter(id=item_id).first()
+            if drawer_item:
+                drawer_item.delete()
+                item_removed = True
+        
+        if not item_removed:
+            return HttpResponse("Item not found", status=404)
+        
+        # Get all remaining items to refresh the list
+        # Use the line_items property if it exists, otherwise combine manually
+        if hasattr(order, 'line_items') and callable(getattr(order, 'line_items')):
+            items = order.line_items
+        else:
+            door_items = list(order.door_items.all()) if hasattr(order, 'door_items') else []
+            drawer_items = list(order.drawer_items.all()) if hasattr(order, 'drawer_items') else []
+            items = list(chain(door_items, drawer_items))
+        
+        # Return the updated line items table
+        return render(request, 'door/line_items_table.html', {'items': items})
+    
+    # If not DELETE request, redirect to order detail
+    return redirect('order_detail')
 
 def generate_order_pdf(request, order_id):
     """Generate a PDF version of the order for printing."""
@@ -219,10 +369,16 @@ def generate_order_pdf(request, order_id):
         'wood_stock', 'edge_profile', 'panel_rise', 'style'
     )
     
+    # Get all drawer line items related to this order
+    drawer_items = order.drawer_items.all().select_related(
+        'wood_stock', 'edge_type', 'bottom'
+    )
+    
     # Render the HTML template
     html_string = render_to_string('pdf/order_pdf.html', {
         'order': order,
         'door_items': door_items,
+        'drawer_items': drawer_items,
     })
     
     # Create a PDF file

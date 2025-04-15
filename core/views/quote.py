@@ -8,11 +8,30 @@ from decimal import Decimal
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def quotes(request):
-    all_quotes = Order.quotes.all().select_related('customer')
+    quote_list = Order.quotes.all().select_related('customer')
+    page = request.GET.get('page', 1)
+    
+    # Paginate results
+    paginator = Paginator(quote_list, 10)  # 10 quotes per page
+    
+    try:
+        quotes = paginator.page(page)
+    except PageNotAnInteger:
+        quotes = paginator.page(1)
+    except EmptyPage:
+        quotes = paginator.page(paginator.num_pages)
+    
     return render(request, 'quote/quotes.html', {
-        'quotes': all_quotes,
+        'quotes': quotes,
+        'paginator': paginator,
+        'min_id': '',
+        'max_id': '',
+        'start_date': '',
+        'end_date': '',
+        'customer_search': '',
         'title': 'Quotes'
     })
 
@@ -24,13 +43,15 @@ def quote_detail(request, quote_id):
         'wood_stock', 'edge_profile', 'panel_rise', 'style'
     )
     
-    # Calculate quote total
-    quote_total = sum(item.total_price for item in door_items)
+    # Get all drawer line items related to this quote
+    drawer_items = quote.drawer_items.all().select_related(
+        'wood_stock', 'edge_type', 'bottom'
+    )
     
     return render(request, 'quote/quote_detail.html', {
         'quote': quote,
         'door_items': door_items,
-        'quote_total': quote_total,
+        'drawer_items': drawer_items,
         'title': f'Quote {quote.order_number}'
     })
 
@@ -89,6 +110,32 @@ def create_quote(request):
                             )
                             door_item.save()
                         # Handle other item types here (drawers, etc.) as needed
+                        elif item.get('type') == 'drawer':
+                            # Get drawer components
+                            width = Decimal(item['width'])
+                            height = Decimal(item['height'])
+                            depth = Decimal(item['depth'])
+                            price_per_unit = Decimal(item['price_per_unit'])
+
+                            # Import here to avoid circular imports
+                            from ..models.drawer import DrawerLineItem
+                            
+                            # Create drawer line item using values from the form/session
+                            drawer_item = DrawerLineItem(
+                                order=quote,
+                                wood_stock_id=item['wood_stock']['id'],
+                                edge_type_id=item['edge_type']['id'],
+                                bottom_id=item['bottom']['id'],
+                                width=width,
+                                height=height,
+                                depth=depth,
+                                quantity=item['quantity'],
+                                price_per_unit=price_per_unit,
+                                undermount=item.get('undermount', False),
+                                finishing=item.get('finishing', False),
+                                type='drawer'
+                            )
+                            drawer_item.save()
                     
                     # Calculate and save quote totals
                     quote.calculate_totals()
@@ -143,6 +190,10 @@ def convert_to_order(request, quote_id):
 def quote_search(request):
     min_id = request.GET.get('min_id', '')
     max_id = request.GET.get('max_id', '')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+    customer_query = request.GET.get('customer_search', '').strip()
+    page = request.GET.get('page', 1)
 
     # Start with all quotes
     quotes_query = Order.quotes.all().select_related('customer')
@@ -153,13 +204,44 @@ def quote_search(request):
 
     if max_id and max_id.isdigit():
         quotes_query = quotes_query.filter(id__lte=int(max_id))
+        
+    # Apply date filters if provided
+    try:
+        if start_date:
+            quotes_query = quotes_query.filter(order_date__gte=start_date)
+        
+        if end_date:
+            quotes_query = quotes_query.filter(order_date__lte=end_date)
+    except ValueError:
+        # If date format is invalid, return all quotes
+        pass
+    
+    # Apply customer filter if provided
+    if customer_query:
+        quotes_query = quotes_query.filter(customer__company_name__icontains=customer_query)
 
     # Order by descending order date (newest first)
-    quotes = quotes_query.order_by('-order_date')
+    quotes_query = quotes_query.order_by('-order_date')
+    
+    # Paginate results
+    paginator = Paginator(quotes_query, 10)  # 10 quotes per page
+    
+    try:
+        quotes = paginator.page(page)
+    except PageNotAnInteger:
+        quotes = paginator.page(1)
+    except EmptyPage:
+        quotes = paginator.page(paginator.num_pages)
 
-    # Return only the table rows, not a full page
-    return render(request, 'quote/partials/quote_rows.html', {
-        'quotes': quotes
+    # Return the paginated results
+    return render(request, 'quote/partials/quote_results.html', {
+        'quotes': quotes,
+        'min_id': min_id,
+        'max_id': max_id,
+        'start_date': start_date,
+        'end_date': end_date,
+        'customer_search': customer_query,
+        'paginator': paginator
     })
 
 
@@ -172,10 +254,16 @@ def generate_quote_pdf(request, quote_id):
         'wood_stock', 'edge_profile', 'panel_rise', 'style'
     )
     
+    # Get all drawer line items related to this quote
+    drawer_items = quote.drawer_items.all().select_related(
+        'wood_stock', 'edge_type', 'bottom'
+    )
+    
     # Render the HTML template
     html_string = render_to_string('pdf/quote_pdf.html', {
         'quote': quote,
         'door_items': door_items,
+        'drawer_items': drawer_items
     })
     
     # Create a PDF file

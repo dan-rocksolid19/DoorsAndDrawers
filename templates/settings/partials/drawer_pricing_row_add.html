@@ -1,0 +1,32 @@
+<tr id="drawer-pricing-row-add" class="bg-gray-50" hx-target="this" hx-swap="outerHTML">
+    <td class="px-6 py-4 whitespace-nowrap min-w-[100px]">
+        <input type="number" name="price" placeholder="0.00" step="0.01" min="0.01"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="drawer-pricing-form-add">
+        {% if errors.price %}<div class="text-xs text-red-600 mt-1">{{ errors.price.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap min-w-[100px]">
+        <input type="number" name="height" placeholder="0.00" step="0.01" min="0.01"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="drawer-pricing-form-add">
+        {% if errors.height %}<div class="text-xs text-red-600 mt-1">{{ errors.height.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" form="drawer-pricing-form-add" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save</button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'cancel_drawer_pricing_add' %}"
+           hx-target="#drawer-pricing-row-add"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="drawer-pricing-form-add" 
+      hx-post="{% url 'add_drawer_pricing' %}" 
+      hx-target="#drawer-pricing-tbody"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="drawer-pricing-form-add">
+</form> 

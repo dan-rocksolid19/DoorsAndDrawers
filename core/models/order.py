@@ -1,4 +1,5 @@
 from django.db import models
+from itertools import chain
 from .base import BaseModel
 
 class QuoteManager(models.Manager):
@@ -88,11 +89,41 @@ class Order(BaseModel):
         date_str = self.order_date.strftime('%Y%m%d')
         pk_str = str(self.pk).zfill(4)  # Pad with zeros to 4 digits
         return f"{prefix}-{date_str}-{pk_str}"
+    
+    @property
+    def line_items(self):
+        """Get all line items for this order, regardless of type"""
+        doors = self.door_items.all()
+        drawers = self.drawer_items.all()
+        return list(chain(doors, drawers))
+    
+    def get_line_items_by_type(self, item_type):
+        """Get line items filtered by type"""
+        if item_type == 'door':
+            return self.door_items.all()
+        elif item_type == 'drawer':
+            return self.drawer_items.all()
+        else:
+            return []
+    
+    def count_total_items(self):
+        """Count all line items"""
+        return self.door_items.count() + self.drawer_items.count()
+            
+    def get_item_types_summary(self):
+        """Get a summary of item types and counts"""
+        return {
+            'doors': self.door_items.count(),
+            'drawers': self.drawer_items.count(),
+            'total': self.count_total_items()
+        }
 
     @property
     def item_total(self):
         """Calculate the sum of all line items"""
-        return sum(item.total_price for item in self.line_items.all())
+        door_total = sum(item.total_price for item in self.door_items.all())
+        drawer_total = sum(item.total_price for item in self.drawer_items.all())
+        return door_total + drawer_total
 
     @property
     def subtotal(self):

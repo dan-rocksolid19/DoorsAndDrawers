@@ -1,0 +1,44 @@
+<tr id="door-design-row-add" class="bg-gray-50">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="text" 
+               name="name" 
+               placeholder="Design Name"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.name %}border-red-500{% endif %}"
+               form="door-design-add-form">
+        {% if errors.name %}<div class="text-xs text-red-600 mt-1">{{ errors.name.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+            <input type="checkbox" 
+                   name="arch" 
+                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                   form="door-design-add-form">
+            <span class="ml-2 text-sm text-gray-600">Arch</span>
+        </div>
+        {% if errors.arch %}<div class="text-xs text-red-600 mt-1">{{ errors.arch.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" 
+                form="door-design-add-form"
+                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'cancel_door_design_add' %}"
+           hx-target="#door-design-row-add"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="door-design-add-form" 
+      hx-post="{% url 'add_door_design' %}" 
+      hx-target="#door-designs-tbody" 
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="door-design-add-form">
+</form> 

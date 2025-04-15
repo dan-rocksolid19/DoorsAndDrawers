@@ -1,0 +1,87 @@
+<tr id="panel-type-row-add" class="bg-gray-50">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="text" 
+               name="name" 
+               placeholder="Panel Type Name"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.name %}border-red-500{% endif %}"
+               form="panel-type-add-form">
+        {% if errors.name %}<div class="text-xs text-red-600 mt-1">{{ errors.name.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="surcharge_width" 
+               placeholder="0.00"
+               step="0.01"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.surcharge_width %}border-red-500{% endif %}"
+               form="panel-type-add-form">
+        {% if errors.surcharge_width %}<div class="text-xs text-red-600 mt-1">{{ errors.surcharge_width.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="surcharge_height" 
+               placeholder="0.00"
+               step="0.01"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.surcharge_height %}border-red-500{% endif %}"
+               form="panel-type-add-form">
+        {% if errors.surcharge_height %}<div class="text-xs text-red-600 mt-1">{{ errors.surcharge_height.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="surcharge_percent" 
+               placeholder="0.00"
+               step="0.01"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.surcharge_percent %}border-red-500{% endif %}"
+               form="panel-type-add-form">
+        {% if errors.surcharge_percent %}<div class="text-xs text-red-600 mt-1">{{ errors.surcharge_percent.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="minimum_sq_ft" 
+               placeholder="0.00"
+               step="0.01"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.minimum_sq_ft %}border-red-500{% endif %}"
+               form="panel-type-add-form">
+        {% if errors.minimum_sq_ft %}<div class="text-xs text-red-600 mt-1">{{ errors.minimum_sq_ft.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+            <input type="checkbox" 
+                   name="use_flat_panel_price" 
+                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                   form="panel-type-add-form">
+        </div>
+        {% if errors.use_flat_panel_price %}<div class="text-xs text-red-600 mt-1">{{ errors.use_flat_panel_price.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" 
+                form="panel-type-add-form"
+                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'cancel_panel_type_add' %}"
+           hx-target="#panel-type-row-add"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="panel-type-add-form" 
+      hx-post="{% url 'add_panel_type' %}" 
+      hx-target="#panel-types-tbody" 
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="panel-type-add-form">
+</form> 

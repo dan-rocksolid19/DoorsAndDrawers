@@ -72,6 +72,13 @@ class Style(BaseModel):
 
 class DoorLineItem(LineItem):
     """Model for door line items with all settings."""
+    order = models.ForeignKey(
+        'Order',
+        on_delete=models.CASCADE,
+        related_name='door_items',
+        verbose_name="Order"
+    )
+    
     wood_stock = models.ForeignKey(WoodStock, on_delete=models.PROTECT)
     edge_profile = models.ForeignKey(EdgeProfile, on_delete=models.PROTECT)
     panel_rise = models.ForeignKey(PanelRise, on_delete=models.PROTECT, null=True, blank=True)
@@ -94,31 +101,31 @@ class DoorLineItem(LineItem):
     # Rail dimensions
     rail_top = models.DecimalField(
         max_digits=5,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Top rail size in inches",
-        default=Decimal('1.00')
+        default=Decimal('1.000')
     )
     rail_bottom = models.DecimalField(
         max_digits=5,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Bottom rail size in inches",
-        default=Decimal('1.00')
+        default=Decimal('1.000')
     )
     rail_left = models.DecimalField(
         max_digits=5,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Left rail size in inches",
-        default=Decimal('1.00')
+        default=Decimal('1.000')
     )
     rail_right = models.DecimalField(
         max_digits=5,
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Right rail size in inches",
-        default=Decimal('1.00')
+        default=Decimal('1.000')
     )
     
     class Meta:
@@ -129,6 +136,9 @@ class DoorLineItem(LineItem):
     def square_feet(self):
         """Calculate the square footage of the door."""
         return (self.width * self.height) / 144  # Convert to square feet
+
+    def calculate_price(self):
+        pass
     
     def __str__(self):
         return f"Door {self.id} - {self.wood_stock.name} {self.style.name}"
@@ -138,26 +148,26 @@ class RailDefaults(BaseModel):
     """Model for default rail sizes for doors."""
     top = models.DecimalField(
         max_digits=5, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Default top rail size in inches"
     )
     bottom = models.DecimalField(
         max_digits=5, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Default bottom rail size in inches"
     )
     left = models.DecimalField(
         max_digits=5, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Default left rail size in inches"
     )
     right = models.DecimalField(
         max_digits=5, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Default right rail size in inches"
     )
     

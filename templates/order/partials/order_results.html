@@ -1,0 +1,72 @@
+{% include 'order/partials/order_rows.html' with orders=orders %}
+
+{% if orders.has_other_pages %}
+<tr id="pagination-controls">
+    <td colspan="4" class="px-6 py-3 bg-gray-50">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Showing {{ orders.start_index }} to {{ orders.end_index }} of {{ paginator.count }} orders
+            </div>
+            <div class="flex space-x-2">
+                <!-- First page button -->
+                {% if orders.has_previous %}
+                    <a href="#" 
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'order_search' %}?{% if min_id %}min_id={{ min_id }}&{% endif %}{% if max_id %}max_id={{ max_id }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if customer_search %}customer_search={{ customer_search }}&{% endif %}page=1"
+                       hx-target="#order-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator"
+                       title="First page">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                        </svg>
+                    </a>
+                {% endif %}
+                
+                <!-- Previous page button -->
+                {% if orders.has_previous %}
+                    <a href="#" 
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'order_search' %}?{% if min_id %}min_id={{ min_id }}&{% endif %}{% if max_id %}max_id={{ max_id }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if customer_search %}customer_search={{ customer_search }}&{% endif %}page={{ orders.previous_page_number }}"
+                       hx-target="#order-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator">
+                        Previous
+                    </a>
+                {% endif %}
+                
+                <span class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700">
+                    Page {{ orders.number }} of {{ orders.paginator.num_pages }}
+                </span>
+                
+                <!-- Next page button -->
+                {% if orders.has_next %}
+                    <a href="#"
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'order_search' %}?{% if min_id %}min_id={{ min_id }}&{% endif %}{% if max_id %}max_id={{ max_id }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if customer_search %}customer_search={{ customer_search }}&{% endif %}page={{ orders.next_page_number }}"
+                       hx-target="#order-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator">
+                        Next
+                    </a>
+                {% endif %}
+                
+                <!-- Last page button -->
+                {% if orders.has_next %}
+                    <a href="#" 
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'order_search' %}?{% if min_id %}min_id={{ min_id }}&{% endif %}{% if max_id %}max_id={{ max_id }}&{% endif %}{% if start_date %}start_date={{ start_date }}&{% endif %}{% if end_date %}end_date={{ end_date }}&{% endif %}{% if customer_search %}customer_search={{ customer_search }}&{% endif %}page={{ orders.paginator.num_pages }}"
+                       hx-target="#order-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator"
+                       title="Last page">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </td>
+</tr>
+{% endif %} 

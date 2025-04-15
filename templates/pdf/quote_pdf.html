@@ -184,7 +184,46 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
+        {% endif %}
+        
+        {% if drawer_items %}
+        <h4>Drawer Items</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Wood Type</th>
+                    <th>Edge Type</th>
+                    <th>Bottom Type</th>
+                    <th>Dimensions (W×H×D)</th>
+                    <th>Options</th>
+                    <th>Quantity</th>
+                    <th>Price/Unit</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in drawer_items %}
+                <tr>
+                    <td>{{ item.wood_stock.name }}</td>
+                    <td>{{ item.edge_type.name }}</td>
+                    <td>{{ item.bottom.name }}</td>
+                    <td>{{ item.width }} × {{ item.height }} × {{ item.depth }}</td>
+                    <td>
+                        {% if item.undermount %}Undermount{% endif %}
+                        {% if item.finished_ends %}{% if item.undermount %}, {% endif %}Finished Ends{% endif %}
+                        {% if item.finished_back %}{% if item.undermount or item.finished_ends %}, {% endif %}Finished Back{% endif %}
+                        {% if item.finished_interior %}{% if item.undermount or item.finished_ends or item.finished_back %}, {% endif %}Finished Interior{% endif %}
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.price_per_unit|floatformat:2 }}</td>
+                    <td>${{ item.total_price|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if not door_items and not drawer_items %}
         <p>No line items found for this quote.</p>
         {% endif %}
     </div>

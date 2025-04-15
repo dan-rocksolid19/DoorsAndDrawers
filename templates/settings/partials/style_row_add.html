@@ -1,0 +1,126 @@
+<tr id="style-row-add" class="bg-gray-50">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="text" 
+               name="name" 
+               placeholder="Style Name"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.name %}border-red-500{% endif %}"
+               form="style-add-form">
+        {% if errors.name %}<div class="text-xs text-red-600 mt-1">{{ errors.name.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <select name="panel_type" 
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                       {% if errors.panel_type %}border-red-500{% endif %}"
+                form="style-add-form"
+                required>
+            <option value="">Select Panel Type</option>
+            {% for panel_type in panel_types %}
+                <option value="{{ panel_type.id }}">{{ panel_type.name }}</option>
+            {% endfor %}
+        </select>
+        {% if errors.panel_type %}<div class="text-xs text-red-600 mt-1">{{ errors.panel_type.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <select name="design" 
+                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                       {% if errors.design %}border-red-500{% endif %}"
+                form="style-add-form"
+                required>
+            <option value="">Select Design</option>
+            {% for design in designs %}
+                <option value="{{ design.id }}">{{ design.name }}</option>
+            {% endfor %}
+        </select>
+        {% if errors.design %}<div class="text-xs text-red-600 mt-1">{{ errors.design.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap min-w-[100px]">
+        <input type="number" 
+               name="price" 
+               placeholder="0.00"
+               step="0.01" 
+               min="0"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.price %}border-red-500{% endif %}"
+               form="style-add-form">
+        {% if errors.price %}<div class="text-xs text-red-600 mt-1">{{ errors.price.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="panels_across" 
+               placeholder="1"
+               min="1"
+               value="1"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.panels_across %}border-red-500{% endif %}"
+               form="style-add-form">
+        {% if errors.panels_across %}<div class="text-xs text-red-600 mt-1">{{ errors.panels_across.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="panels_down" 
+               placeholder="1"
+               min="1"
+               value="1"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.panels_down %}border-red-500{% endif %}"
+               form="style-add-form">
+        {% if errors.panels_down %}<div class="text-xs text-red-600 mt-1">{{ errors.panels_down.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="panel_overlap" 
+               placeholder="0.000"
+               step="0.001"
+               value="0.000"
+               required
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm
+                      {% if errors.panel_overlap %}border-red-500{% endif %}"
+               form="style-add-form">
+        {% if errors.panel_overlap %}<div class="text-xs text-red-600 mt-1">{{ errors.panel_overlap.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+            <input type="checkbox" 
+                   name="designs_on_top" 
+                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                   form="style-add-form">
+        </div>
+        {% if errors.designs_on_top %}<div class="text-xs text-red-600 mt-1">{{ errors.designs_on_top.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+            <input type="checkbox" 
+                   name="designs_on_bottom" 
+                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                   form="style-add-form">
+        </div>
+        {% if errors.designs_on_bottom %}<div class="text-xs text-red-600 mt-1">{{ errors.designs_on_bottom.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" 
+                form="style-add-form"
+                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'cancel_door_style_add' %}"
+           hx-target="#style-row-add"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="style-add-form" 
+      hx-post="{% url 'add_door_style' %}" 
+      hx-target="#door-styles-tbody" 
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="style-add-form">
+</form> 

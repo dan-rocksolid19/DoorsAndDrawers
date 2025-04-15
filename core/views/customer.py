@@ -3,11 +3,27 @@ from django.contrib import messages
 from ..forms import CustomerForm
 from ..models import Customer
 from django.db import models
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def customers(request):
-    customers = Customer.objects.all().order_by('-id')
+    customer_list = Customer.objects.all().order_by('-id')
+    search_query = request.GET.get('search', '')
+    page = request.GET.get('page', 1)
+    
+    # Paginate results
+    paginator = Paginator(customer_list, 10)  # 10 customers per page
+    
+    try:
+        customers = paginator.page(page)
+    except PageNotAnInteger:
+        customers = paginator.page(1)
+    except EmptyPage:
+        customers = paginator.page(paginator.num_pages)
+    
     return render(request, 'customer/customers.html', {
         'customers': customers,
+        'search_query': search_query,
+        'paginator': paginator,
         'title': 'Customers'
     })
 
@@ -67,13 +83,14 @@ def delete_customer(request, id):
 
 def customer_search(request):
     search_query = request.GET.get('search', '').strip().lower()
+    page = request.GET.get('page', 1)
     
     if not search_query:
         # If no search query, return all customers
-        customers = Customer.objects.all().order_by('-id')
+        customer_list = Customer.objects.all().order_by('-id')
     else:
         # Search across multiple fields
-        customers = Customer.objects.filter(
+        customer_list = Customer.objects.filter(
             models.Q(company_name__icontains=search_query) |
             models.Q(first_name__icontains=search_query) |
             models.Q(last_name__icontains=search_query) |
@@ -81,7 +98,19 @@ def customer_search(request):
             models.Q(phone__icontains=search_query)
         ).order_by('-id')
     
-    # Return only the table rows, not a full page
-    return render(request, 'customer/partials/customer_rows.html', {
-        'customers': customers
+    # Paginate results
+    paginator = Paginator(customer_list, 10)  # 10 customers per page
+    
+    try:
+        customers = paginator.page(page)
+    except PageNotAnInteger:
+        customers = paginator.page(1)
+    except EmptyPage:
+        customers = paginator.page(paginator.num_pages)
+    
+    # Return the paginated results with the appropriate template
+    return render(request, 'customer/partials/customer_results.html', {
+        'customers': customers,
+        'search_query': search_query,
+        'paginator': paginator
     }) 

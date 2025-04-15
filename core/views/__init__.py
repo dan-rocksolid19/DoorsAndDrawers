@@ -17,6 +17,9 @@ from .line_item import (
 from .door import (
     door_form, add_door
 )
+from .drawer import (
+    drawer_form, add_drawer
+)
 
 def home(request):
     return render(request, 'home.html', {
@@ -32,5 +35,5 @@ __all__ = [
     'quotes', 'quote_detail', 'create_quote',
     'delete_quote', 'convert_to_order',
     'settings', 'door_settings', 'drawer_settings',
-    'door_form'
+    'door_form', 'drawer_form', 'add_drawer'
 ] 

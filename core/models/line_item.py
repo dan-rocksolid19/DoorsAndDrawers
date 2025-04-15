@@ -13,7 +13,7 @@ class LineItem(BaseModel):
     order = models.ForeignKey(
         'Order',
         on_delete=models.CASCADE,
-        related_name='line_items',
+        related_name='+',
         verbose_name="Order"
     )
     type = models.CharField(

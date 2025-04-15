@@ -11,19 +11,14 @@
                     Wood Type
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Edge Profile
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Panel Rise
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Style
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Dimensions
                 </th>
+                {% comment %} Drawer-specific columns {% endcomment %}
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rails (T×B×L×R)
+                    Details
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Options
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Quantity
@@ -34,31 +29,48 @@
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total Price
                 </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                </th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             {% for item in items %}
-            <tr data-line-item-price="{{ item.total_price }}" data-line-item-type="{{ item.type }}">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <tr data-line-item-price="{{ item.total_price }}" data-line-item-type="{{ item.type }}" data-line-item-index="{{ forloop.counter0 }}">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {{ item.type|title }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ item.wood_stock.name|default:"Unknown" }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ item.edge_profile.name|default:"Unknown" }}
+                    {% if item.type == 'drawer' %}
+                        {{ item.width }} × {{ item.height }} × {{ item.depth }}
+                    {% else %}
+                        {{ item.width }} × {{ item.height }}
+                    {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ item.panel_rise.name|default:"Unknown" }}
+                    {% if item.type == 'drawer' %}
+                        <span class="inline-block">
+                            Edge: {{ item.edge_type.name|default:"Unknown" }}<br>
+                            Bottom: {{ item.bottom.name|default:"Unknown" }}
+                        </span>
+                    {% else %}
+                        <span class="inline-block">
+                            Edge: {{ item.edge_profile.name|default:"Unknown" }}<br>
+                            Panel: {{ item.panel_rise.name|default:"Unknown" }}<br>
+                            Style: {{ item.style.name|default:"Unknown" }}
+                        </span>
+                    {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ item.style.name|default:"Unknown" }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ item.width }} × {{ item.height }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}
+                    {% if item.type == 'drawer' %}
+                        {% if item.undermount %}Undermount<br>{% endif %}
+                        {% if item.finishing %}Finishing{% endif %}
+                    {% else %}
+                        Rails: {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}
+                    {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ item.quantity }}
@@ -68,6 +80,17 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${{ item.total_price }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <button class="text-red-600 hover:text-red-900"
+                            hx-delete="{% url 'remove_line_item' forloop.counter0 %}"
+                            hx-target=".line-items-container"
+                            hx-swap="innerHTML"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
                 </td>
             </tr>
             {% endfor %}
@@ -89,4 +112,15 @@
             updateItemTotal(newTotal);
         }
     })();
+    
+    // Listen for HTMX after-swap events to update totals after line item removal
+    document.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.classList.contains('line-items-container')) {
+            // Recalculate totals after line items are updated
+            const newTotal = calculateLineItemsTotal();
+            if (typeof updateItemTotal === 'function') {
+                updateItemTotal(newTotal);
+            }
+        }
+    });
 </script> 

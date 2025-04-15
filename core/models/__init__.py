@@ -12,6 +12,13 @@ from .door import (
     DoorLineItem,
     RailDefaults
 )
+from .drawer import (
+    DrawerWoodStock,
+    DrawerEdgeType,
+    DrawerBottomSize,
+    DrawerPricing,
+    DrawerLineItem
+)
 
 __all__ = [
     'BaseModel',
@@ -29,4 +36,9 @@ __all__ = [
     'Style',
     'DoorLineItem',
     'RailDefaults',
+    'DrawerWoodStock',
+    'DrawerEdgeType',
+    'DrawerBottomSize',
+    'DrawerPricing', 
+    'DrawerLineItem'
 ] 

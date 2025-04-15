@@ -1,0 +1,108 @@
+<!-- No extends base.html - this is a partial template -->
+{% load widget_tweaks %}
+
+<div id="drawer-form" class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Drawer Details</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Left column: Wood, Bottom, Edge Type -->
+        <div class="space-y-3">
+            <!-- WoodStock -->
+            <div class="form-group">
+                <label for="{{ form.wood_stock.id_for_label }}" class="block text-sm font-medium text-gray-700">Wood Stock</label>
+                {% render_field form.wood_stock class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+                {% if form.wood_stock.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.wood_stock.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Bottom -->
+            <div class="form-group">
+                <label for="{{ form.bottom.id_for_label }}" class="block text-sm font-medium text-gray-700">Bottom</label>
+                {% render_field form.bottom class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+                {% if form.bottom.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.bottom.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Edge Type -->
+            <div class="form-group">
+                <label for="{{ form.edge_type.id_for_label }}" class="block text-sm font-medium text-gray-700">Edge Type</label>
+                {% render_field form.edge_type class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+                {% if form.edge_type.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.edge_type.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Right column: Dimensions, Quantity, Options -->
+        <div class="space-y-3">
+            <!-- Dimensions in a 3-column layout -->
+            <h3 class="text-sm font-medium text-gray-700 mt-2">Dimensions (inches)</h3>
+            <div class="grid grid-cols-3 gap-4">
+                <!-- Width -->
+                <div class="form-group">
+                    <label for="{{ form.width.id_for_label }}" class="block text-sm font-medium text-gray-700">Width</label>
+                    {% render_field form.width class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+                    {% if form.width.errors %}
+                        <div class="text-red-500 text-xs mt-1">{{ form.width.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Height -->
+                <div class="form-group">
+                    <label for="{{ form.height.id_for_label }}" class="block text-sm font-medium text-gray-700">Height</label>
+                    {% render_field form.height class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+                    {% if form.height.errors %}
+                        <div class="text-red-500 text-xs mt-1">{{ form.height.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Depth -->
+                <div class="form-group">
+                    <label for="{{ form.depth.id_for_label }}" class="block text-sm font-medium text-gray-700">Depth</label>
+                    {% render_field form.depth class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+                    {% if form.depth.errors %}
+                        <div class="text-red-500 text-xs mt-1">{{ form.depth.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quantity -->
+            <div class="form-group">
+                <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-gray-700">Quantity</label>
+                {% render_field form.quantity class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+                {% if form.quantity.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.quantity.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Additional Options -->
+            <h3 class="text-sm font-medium text-gray-700 mt-2">Options</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Undermount -->
+                <div class="flex items-center">
+                    {% render_field form.undermount class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" %}
+                    <label for="{{ form.undermount.id_for_label }}" class="ml-2 block text-sm text-gray-700">Undermount</label>
+                </div>
+                
+                <!-- Finishing -->
+                <div class="flex items-center">
+                    {% render_field form.finishing class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" %}
+                    <label for="{{ form.finishing.id_for_label }}" class="ml-2 block text-sm text-gray-700">Finishing</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-6">
+        <button type="button" 
+                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                hx-post="{% url 'new_drawer' %}"
+                hx-include="#drawer-form"
+                hx-target="#line-items-container"
+                hx-swap="innerHTML">
+            Add Drawer
+        </button>
+    </div>
+</div>

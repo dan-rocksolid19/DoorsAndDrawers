@@ -11,8 +11,8 @@
 
     <!-- Range Search Form -->
     <div class="mb-4 bg-white p-4 rounded-lg shadow-sm">
-        <form class="flex items-end space-x-4" hx-get="{% url 'quote_search' %}" hx-target="#quote-results" hx-indicator="#search-indicator" hx-trigger="submit, change delay:500ms from:#min-id, change delay:500ms from:#max-id">
-            <div>
+        <form class="flex flex-col md:flex-row items-end gap-4" hx-get="{% url 'quote_search' %}" hx-target="#quote-results" hx-indicator="#search-indicator" hx-swap="innerHTML" hx-trigger="submit, change delay:500ms from:#min-id, change delay:500ms from:#max-id, change delay:500ms from:#start-date, change delay:500ms from:#end-date, keyup delay:500ms from:#customer-search">
+            <div class="w-full md:w-auto">
                 <label for="min-id" class="block text-sm font-medium text-gray-700 mb-1">Quote ID Range</label>
                 <div class="flex items-center">
                     <input 
@@ -34,51 +34,78 @@
                     />
                 </div>
             </div>
-            <button 
-                type="submit" 
-                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-                Filter
-            </button>
-            <div id="search-indicator" class="htmx-indicator">
-                <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+            
+            <div class="w-full md:w-auto">
+                <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                <div class="flex items-center">
+                    <input 
+                        type="date" 
+                        id="start-date" 
+                        name="start_date" 
+                        class="shadow-sm rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
+                    <span class="mx-2 text-gray-500">to</span>
+                    <input 
+                        type="date" 
+                        id="end-date" 
+                        name="end_date" 
+                        class="shadow-sm rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
+                </div>
             </div>
-            <!-- Reset Button -->
-            <button 
-                type="button" 
-                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                onclick="document.getElementById('min-id').value = ''; document.getElementById('max-id').value = ''; this.form.requestSubmit();"
-            >
-                Reset
-            </button>
+            
+            <div class="w-full md:w-64">
+                <label for="customer-search" class="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                <input 
+                    type="text" 
+                    id="customer-search" 
+                    name="customer_search" 
+                    placeholder="Customer name or QTE-..." 
+                    class="shadow-sm rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm w-full"
+                />
+            </div>
+            
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <button 
+                    type="submit" 
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                    Filter
+                </button>
+                <div id="search-indicator" class="htmx-indicator">
+                    <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <!-- Reset Button -->
+                <button 
+                    type="button" 
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    onclick="document.getElementById('min-id').value = ''; document.getElementById('max-id').value = ''; document.getElementById('start-date').value = ''; document.getElementById('end-date').value = ''; document.getElementById('customer-search').value = ''; this.form.requestSubmit();"
+                >
+                    Reset
+                </button>
+            </div>
         </form>
     </div>
 
-    {% if quotes %}
-        <div class="bg-white rounded-lg shadow">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <th class="px-6 py-3 bg-gray-50">QUOTE NUMBER</th>
-                            <th class="px-6 py-3 bg-gray-50">CUSTOMER</th>
-                            <th class="px-6 py-3 bg-gray-50">DATE</th>
-                            <th class="px-6 py-3 bg-gray-50">ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="quote-results" class="divide-y divide-gray-200">
-                        {% include 'quote/partials/quote_rows.html' with quotes=quotes %}
-                    </tbody>
-                </table>
-            </div>
+    <div class="bg-white rounded-lg shadow">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 bg-gray-50">QUOTE NUMBER</th>
+                        <th class="px-6 py-3 bg-gray-50">CUSTOMER</th>
+                        <th class="px-6 py-3 bg-gray-50">DATE</th>
+                        <th class="px-6 py-3 bg-gray-50">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="quote-results" class="divide-y divide-gray-200">
+                    {% include 'quote/partials/quote_results.html' with quotes=quotes paginator=paginator min_id=min_id max_id=max_id start_date=start_date end_date=end_date customer_search=customer_search %}
+                </tbody>
+            </table>
         </div>
-    {% else %}
-        <div class="bg-white rounded-lg shadow p-6">
-            <p class="text-gray-500">No quotes found.</p>
-        </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %} 

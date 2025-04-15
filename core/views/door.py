@@ -34,43 +34,34 @@ def add_door(request):
     Receives payload with door specifications and adds to session-based order.
     """
     try:
-
-        if not request.session["current_order"]:
+        if not request.session.get("current_order"):
             return JsonResponse({"error": "Select a customer."}, status=401)
-        # Access POST data directly
-        data = request.POST
         
-        # Extract door specifications
-        wood_stock_id = data.get('wood_stock')
-        edge_profile_id = data.get('edge_profile')
-        panel_rise_id = data.get('panel_rise')
-        style_id = data.get('style')
-        width = data.get('width')
-        height = data.get('height')
-        quantity = data.get('quantity', '1')
+        # Use the DoorForm for validation
+        form = DoorForm(request.POST)
         
-        # Ensure required values are present
-        if not all([wood_stock_id, edge_profile_id, panel_rise_id, style_id, width, height]):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        if not form.is_valid():
+            # Return form errors
+            errors = {field: errors[0] for field, errors in form.errors.items()}
+            return JsonResponse({'error': 'Form validation failed', 'field_errors': errors}, status=400)
+            
+        # Get cleaned data from the form
+        cleaned_data = form.cleaned_data
         
-        # Validate numeric fields
-        try:
-            width = Decimal(str(width).replace(',', '.'))
-            height = Decimal(str(height).replace(',', '.'))
-            quantity = int(quantity)
-        except (ValueError, TypeError):
-            return JsonResponse({'error': 'Invalid numeric values'}, status=400)
+        # Extract door specifications from cleaned data
+        wood_stock = cleaned_data['wood_stock']
+        edge_profile = cleaned_data['edge_profile']
+        panel_rise = cleaned_data['panel_rise']
+        style = cleaned_data['style']
+        width = cleaned_data['width']
+        height = cleaned_data['height']
+        quantity = cleaned_data['quantity']
         
-        # Get models from database for validation (would add error handling in production)
-        try:
-            wood_stock = WoodStock.objects.get(id=wood_stock_id)
-            edge_profile = EdgeProfile.objects.get(id=edge_profile_id)
-            panel_rise = PanelRise.objects.get(id=panel_rise_id)  
-            style = Style.objects.get(id=style_id)
-            # Get rail defaults
-            rail_defaults = RailDefaults.objects.first()
-        except Exception as e:
-            return JsonResponse({'error': f'Invalid reference data: {str(e)}'}, status=400)
+        # Extract rail dimensions
+        rail_top = cleaned_data['rail_top']
+        rail_bottom = cleaned_data['rail_bottom']
+        rail_left = cleaned_data['rail_left']
+        rail_right = cleaned_data['rail_right']
             
         # Calculate price using the same logic as in create_order
         base_price = style.price
@@ -87,12 +78,6 @@ def add_door(request):
         # Calculate total price (price_per_unit * quantity)
         total_price = price_per_unit * quantity
         
-        # Default rail values if no rail_defaults exist
-        rail_top = str(rail_defaults.top) if rail_defaults else '2.50'
-        rail_bottom = str(rail_defaults.bottom) if rail_defaults else '2.50'
-        rail_left = str(rail_defaults.left) if rail_defaults else '2.50'
-        rail_right = str(rail_defaults.right) if rail_defaults else '2.50'
-        
         # Create door item
         door_item = {
             'type': 'door',
@@ -105,10 +90,10 @@ def add_door(request):
             'quantity': str(quantity),
             'price_per_unit': str(price_per_unit),
             'total_price': str(total_price),
-            'rail_top': rail_top,
-            'rail_bottom': rail_bottom,
-            'rail_left': rail_left,
-            'rail_right': rail_right
+            'rail_top': str(rail_top),
+            'rail_bottom': str(rail_bottom),
+            'rail_left': str(rail_left),
+            'rail_right': str(rail_right)
         }
         
         # Add the door to the session order

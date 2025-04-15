@@ -42,7 +42,7 @@
             {% endfor %}
         </div>
         
-        <!-- Right column: Width, Height, Quantity -->
+        <!-- Right column: Width, Height, Rail dimensions, Quantity -->
         <div class="space-y-3">
             <!-- Width & Height in a 2-column layout -->
             <div class="grid grid-cols-2 gap-4">
@@ -50,6 +50,25 @@
                     {% if field.name == 'width' or field.name == 'height' %}
                     <div class="form-group">
                         <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }} (inches)</label>
+                        {% render_field field %}
+                        {% if field.errors %}
+                            <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
+                        {% endif %}
+                        {% if field.help_text %}
+                            <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <!-- Rail dimensions in a 2-column layout -->
+            <h3 class="text-sm font-medium text-gray-700 mt-2">Rail Dimensions (inches)</h3>
+            <div class="grid grid-cols-2 gap-4">
+                {% for field in form %}
+                    {% if field.name == 'rail_top' or field.name == 'rail_bottom' or field.name == 'rail_left' or field.name == 'rail_right' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
                         {% render_field field %}
                         {% if field.errors %}
                             <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>

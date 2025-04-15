@@ -22,7 +22,9 @@
                     hx-get="{% url 'customer_search' %}"
                     hx-trigger="keyup changed delay:300ms, search"
                     hx-target="#customer-results"
+                    hx-swap="innerHTML"
                     hx-indicator="#search-indicator"
+                    value="{{ search_query }}"
                 />
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <!-- Search icon -->
@@ -52,7 +54,7 @@
                     </tr>
                 </thead>
                 <tbody id="customer-results" class="bg-white divide-y divide-gray-200">
-                    {% include 'customer/partials/customer_rows.html' with customers=customers %}
+                    {% include 'customer/partials/customer_results.html' with customers=customers search_query=search_query paginator=customers.paginator %}
                 </tbody>
             </table>
         </div>

@@ -97,7 +97,11 @@
             <h2 class="text-lg font-medium text-gray-900">Line Items</h2>
         </div>
         <div class="overflow-x-auto">
+            <!-- Door Items Table -->
             {% if door_items %}
+                <div class="px-4 py-3 bg-gray-100 border-b border-gray-200">
+                    <h3 class="text-md font-medium text-gray-700">Doors</h3>
+                </div>
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -130,7 +134,49 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            {% else %}
+            {% endif %}
+
+            <!-- Drawer Items Table -->
+            {% if drawer_items %}
+                <div class="px-4 py-3 bg-gray-100 border-b border-gray-200 {% if door_items %}mt-8{% endif %}">
+                    <h3 class="text-md font-medium text-gray-700">Drawers</h3>
+                </div>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wood Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edge Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bottom Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dimensions (W×H×D)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Options</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price/Unit</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for item in drawer_items %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.get_type_display }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.wood_stock.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.edge_type.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.bottom.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.width }} × {{ item.height }} × {{ item.depth }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if item.undermount %}Undermount, {% endif %}
+                                    {% if item.finishing %}Finished{% else %}Unfinished{% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.quantity }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ item.price_per_unit|floatformat:2 }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ item.total_price|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            {% if not door_items and not drawer_items %}
                 <div class="p-6 text-center text-gray-500">
                     No line items found for this order.
                 </div>

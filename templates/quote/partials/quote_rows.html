@@ -2,7 +2,7 @@
     <tr class="hover:bg-gray-50">
         <td class="px-6 py-4">{{ quote.order_number }}</td>
         <td class="px-6 py-4">{{ quote.customer }}</td>
-        <td class="px-6 py-4">{{ quote.order_date }}</td>
+        <td class="px-6 py-4">{{ quote.order_date|date:"M d, Y" }}</td>
         <td class="px-6 py-4">
             <a href="{% url 'quote_detail' quote.id %}" class="text-blue-600 hover:text-blue-900">View</a>
         </td>
@@ -10,7 +10,7 @@
 {% empty %}
     <tr>
         <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
-            No quotes found in the specified range. Try different range values or <a href="{% url 'new_quote' %}" class="text-blue-600 hover:text-blue-900">create a new quote</a>.
+            No quotes found in the specified range. Try different date or ID range values or <a href="{% url 'new_quote' %}" class="text-blue-600 hover:text-blue-900">create a new quote</a>.
         </td>
     </tr>
 {% endfor %} 

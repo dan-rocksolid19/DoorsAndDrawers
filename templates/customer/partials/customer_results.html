@@ -1,0 +1,72 @@
+{% include 'customer/partials/customer_rows.html' with customers=customers %}
+
+{% if customers.has_other_pages %}
+<tr id="pagination-controls">
+    <td colspan="5" class="px-6 py-3 bg-gray-50">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Showing {{ customers.start_index }} to {{ customers.end_index }} of {{ paginator.count }} customers
+            </div>
+            <div class="flex space-x-2">
+                <!-- First page button -->
+                {% if customers.has_previous %}
+                    <a href="#" 
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'customer_search' %}?search={{ search_query }}&page=1"
+                       hx-target="#customer-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator"
+                       title="First page">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                        </svg>
+                    </a>
+                {% endif %}
+                
+                <!-- Previous page button -->
+                {% if customers.has_previous %}
+                    <a href="#" 
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'customer_search' %}?search={{ search_query }}&page={{ customers.previous_page_number }}"
+                       hx-target="#customer-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator">
+                        Previous
+                    </a>
+                {% endif %}
+                
+                <span class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700">
+                    Page {{ customers.number }} of {{ customers.paginator.num_pages }}
+                </span>
+                
+                <!-- Next page button -->
+                {% if customers.has_next %}
+                    <a href="#"
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'customer_search' %}?search={{ search_query }}&page={{ customers.next_page_number }}"
+                       hx-target="#customer-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator">
+                        Next
+                    </a>
+                {% endif %}
+                
+                <!-- Last page button -->
+                {% if customers.has_next %}
+                    <a href="#" 
+                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                       hx-get="{% url 'customer_search' %}?search={{ search_query }}&page={{ customers.paginator.num_pages }}"
+                       hx-target="#customer-results"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator"
+                       title="Last page">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </td>
+</tr>
+{% endif %} 

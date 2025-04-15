@@ -1,0 +1,64 @@
+<tr id="rail-defaults-row" class="bg-gray-50" hx-target="this" hx-swap="outerHTML">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="top" 
+               value="{{ defaults.top }}"
+               step="0.001"
+               min="0.001"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="rail-defaults-form">
+        {% if errors.top %}<div class="text-xs text-red-600 mt-1">{{ errors.top.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="bottom" 
+               value="{{ defaults.bottom }}"
+               step="0.001"
+               min="0.001"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="rail-defaults-form">
+        {% if errors.bottom %}<div class="text-xs text-red-600 mt-1">{{ errors.bottom.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="left" 
+               value="{{ defaults.left }}"
+               step="0.001"
+               min="0.001"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="rail-defaults-form">
+        {% if errors.left %}<div class="text-xs text-red-600 mt-1">{{ errors.left.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="number" 
+               name="right" 
+               value="{{ defaults.right }}"
+               step="0.001"
+               min="0.001"
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="rail-defaults-form">
+        {% if errors.right %}<div class="text-xs text-red-600 mt-1">{{ errors.right.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" 
+                form="rail-defaults-form" 
+                class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Save
+        </button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'get_rail_defaults' %}"
+           hx-target="#rail-defaults-row"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="rail-defaults-form" 
+      hx-post="{% url 'update_rail_defaults' %}" 
+      hx-target="#rail-defaults-row" 
+      hx-swap="outerHTML">
+    <!-- Hidden input to ensure the CSRF token is included in the form -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="rail-defaults-form">
+</form> 

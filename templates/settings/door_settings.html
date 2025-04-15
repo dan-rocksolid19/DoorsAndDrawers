@@ -50,7 +50,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="door-styles-tbody" class="bg-white divide-y divide-gray-200">
                     {% for style in styles %}
                     {% include 'settings/partials/style_row_display.html' with style=style %}
                     {% empty %}
@@ -60,6 +60,7 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% include 'settings/partials/style_add_button.html' %}
                 </tbody>
             </table>
         </div>
@@ -86,7 +87,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="wood-stocks-tbody" class="bg-white divide-y divide-gray-200">
                     {% for wood in wood_stocks %}
                     {% include 'settings/partials/wood_stock_row_display.html' with wood=wood %}
                     {% empty %}
@@ -96,13 +97,14 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% include 'settings/partials/wood_stock_add_button.html' %}
                 </tbody>
             </table>
         </div>
     </div>
     
     <!-- Door Designs -->
-    <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+    <div id="door-designs-container" class="bg-white rounded-lg shadow-md p-8 mb-8">
         <h2 class="text-xl font-semibold mb-6">Door Designs</h2>
         
         <div class="overflow-x-auto">
@@ -120,7 +122,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="door-designs-tbody" class="bg-white divide-y divide-gray-200">
                     {% for design in designs %}
                         {% include 'settings/partials/design_row_display.html' %}
                     {% empty %}
@@ -130,6 +132,7 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% include 'settings/partials/door_design_add_button.html' %}
                 </tbody>
             </table>
         </div>
@@ -150,7 +153,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="edge-profiles-tbody" class="bg-white divide-y divide-gray-200">
                     {% for profile in edge_profiles %}
                         {% include 'settings/partials/edge_profile_row_display.html' with profile=profile %}
                     {% empty %}
@@ -160,6 +163,7 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% include 'settings/partials/edge_profile_add_button.html' %}
                 </tbody>
             </table>
         </div>
@@ -180,7 +184,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="panel-rises-tbody" class="bg-white divide-y divide-gray-200">
                     {% for rise in panel_rises %}
                         {% include 'settings/partials/panel_rise_row_display.html' with rise=rise %}
                     {% empty %}
@@ -190,6 +194,7 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% include 'settings/partials/panel_rise_add_button.html' %}
                 </tbody>
             </table>
         </div>
@@ -225,7 +230,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="panel-types-tbody" class="bg-white divide-y divide-gray-200">
                     {% for panel_type in panel_types %}
                         {% include 'settings/partials/panel_type_row_display.html' with type=panel_type %}
                     {% empty %}
@@ -235,6 +240,7 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% include 'settings/partials/panel_type_add_button.html' %}
                 </tbody>
             </table>
         </div>
@@ -267,23 +273,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% if rail_defaults %}
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ rail_defaults.top }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ rail_defaults.bottom }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ rail_defaults.left }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ rail_defaults.right }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <button class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                        </td>
-                    </tr>
+                        {% include 'settings/partials/rail_defaults_row_display.html' with defaults=rail_defaults %}
                     {% else %}
                     <tr>
                         <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">

@@ -1,0 +1,17 @@
+<tr id="drawer-pricing-row-{{ pricing.id }}">
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        ${{ pricing.price|floatformat:2 }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {{ pricing.height|floatformat:2 }}″
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <a href="#" 
+           class="text-indigo-600 hover:text-indigo-900 mr-3"
+           hx-get="{% url 'edit_drawer_pricing' pricing.id %}"
+           hx-target="#drawer-pricing-row-{{ pricing.id }}"
+           hx-swap="outerHTML">
+            Edit
+        </a>
+    </td>
+</tr> 

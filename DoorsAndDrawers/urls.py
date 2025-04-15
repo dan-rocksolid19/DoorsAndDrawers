@@ -22,5 +22,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')), 
     path('settings/', settings, name='settings'),
-    path('settings/drawer/', drawer_settings, name='drawer_settings'),
 ]

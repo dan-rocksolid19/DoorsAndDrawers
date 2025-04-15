@@ -1,0 +1,27 @@
+<tr id="drawer-edge-type-row-{{ edge.id }}" class="bg-gray-50" hx-target="this" hx-swap="outerHTML">
+    <td class="px-6 py-4 whitespace-nowrap">
+        <input type="text" name="name" value="{{ edge.name }}" 
+               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+               form="drawer-edge-type-form-{{ edge.id }}">
+        {% if errors.name %}<div class="text-xs text-red-600 mt-1">{{ errors.name.0 }}</div>{% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+        <button type="submit" form="drawer-edge-type-form-{{ edge.id }}" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Save</button>
+        <a href="#" 
+           class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+           hx-get="{% url 'get_drawer_edgetype' edge.id %}"
+           hx-target="#drawer-edge-type-row-{{ edge.id }}"
+           hx-swap="outerHTML">
+            Cancel
+        </a>
+    </td>
+</tr>
+
+<form id="drawer-edge-type-form-{{ edge.id }}" 
+      hx-post="{% url 'update_drawer_edgetype' edge.id %}" 
+      hx-target="#drawer-edge-type-row-{{ edge.id }}" 
+      hx-swap="outerHTML">
+    {% csrf_token %}
+    <!-- Hidden input to ensure the CSRF token is included in the form -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" form="drawer-edge-type-form-{{ edge.id }}">
+</form> 

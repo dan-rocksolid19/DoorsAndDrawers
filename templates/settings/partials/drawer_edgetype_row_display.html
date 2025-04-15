@@ -1,0 +1,14 @@
+<tr id="drawer-edge-type-row-{{ edge.id }}">
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {{ edge.name }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <a href="#" 
+           class="text-indigo-600 hover:text-indigo-900 mr-3"
+           hx-get="{% url 'edit_drawer_edgetype' edge.id %}"
+           hx-target="#drawer-edge-type-row-{{ edge.id }}"
+           hx-swap="outerHTML">
+            Edit
+        </a>
+    </td>
+</tr> 
