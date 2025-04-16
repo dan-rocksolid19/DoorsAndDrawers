@@ -53,7 +53,6 @@ def add_door(request):
         price_per_unit_manual = request.POST.get('price_per_unit_manual')
         
         # Create a DoorLineItem instance without saving it to the database
-        # This will be used for price calculation
         door_item_model = DoorLineItem(**cleaned_data)
         
         # Apply custom price if provided

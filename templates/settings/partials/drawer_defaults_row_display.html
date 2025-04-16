@@ -1,0 +1,35 @@
+<tr id="drawer-defaults-row">
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.surcharge_width }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.surcharge_depth }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.surcharge_percent }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.finish_charge }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.undermount_charge }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.ends_cutting_adjustment }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.sides_cutting_adjustment }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {{ defaults.plywood_size_adjustment }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        <a href="#" 
+           class="text-indigo-600 hover:text-indigo-900 mr-3"
+           hx-get="{% url 'edit_drawer_defaults' %}"
+           hx-target="#drawer-defaults-row"
+           hx-swap="outerHTML">
+            Edit
+        </a>
+    </td>
+</tr> 

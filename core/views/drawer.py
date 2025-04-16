@@ -46,17 +46,6 @@ def add_drawer(request):
         # Get cleaned data from the form
         cleaned_data = form.cleaned_data
         
-        # Extract drawer specifications and custom price information
-        wood_stock = cleaned_data['wood_stock']
-        edge_type = cleaned_data['edge_type']
-        bottom = cleaned_data['bottom']
-        width = cleaned_data['width']
-        height = cleaned_data['height']
-        depth = cleaned_data['depth']
-        quantity = cleaned_data['quantity']
-        undermount = cleaned_data['undermount']
-        finishing = cleaned_data['finishing']
-        
         # Get custom price information (using the drawer-specific field names)
         custom_price = request.POST.get('custom_price') == 'on'
         price_per_unit_manual = request.POST.get('price_per_unit_manual')
@@ -82,15 +71,15 @@ def add_drawer(request):
         # Create drawer item for session storage
         drawer_item = {
             'type': 'drawer',
-            'wood_stock': {'id': wood_stock.pk, 'name': wood_stock.name},
-            'edge_type': {'id': edge_type.pk, 'name': edge_type.name},
-            'bottom': {'id': bottom.pk, 'name': bottom.name},
-            'width': str(width),
-            'height': str(height),
-            'depth': str(depth),
-            'quantity': str(quantity),
-            'undermount': undermount,
-            'finishing': finishing,
+            'wood_stock': {'id': cleaned_data['wood_stock'].pk, 'name': cleaned_data['wood_stock'].name},
+            'edge_type': {'id': cleaned_data['edge_type'].pk, 'name': cleaned_data['edge_type'].name},
+            'bottom': {'id': cleaned_data['bottom'].pk, 'name': cleaned_data['bottom'].name},
+            'width': str(cleaned_data['width']),
+            'height': str(cleaned_data['height']),
+            'depth': str(cleaned_data['depth']),
+            'quantity': str(cleaned_data['quantity']),
+            'undermount': cleaned_data['undermount'],
+            'finishing': cleaned_data['finishing'],
             'price_per_unit': str(drawer_item_model.price_per_unit),
             'total_price': str(price),
             'custom_price': custom_price

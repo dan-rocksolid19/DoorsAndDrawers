@@ -19,7 +19,6 @@ from django.urls import path, include
 from core.views import settings, door_settings, drawer_settings
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('core.urls')), 
+    path('', include('core.urls')),
     path('settings/', settings, name='settings'),
 ]

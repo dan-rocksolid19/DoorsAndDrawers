@@ -17,7 +17,8 @@ from .drawer import (
     DrawerEdgeType,
     DrawerBottomSize,
     DrawerPricing,
-    DrawerLineItem
+    DrawerLineItem,
+    DefaultDrawerSettings
 )
 
 __all__ = [
@@ -41,5 +42,6 @@ __all__ = [
     'DrawerBottomSize',
     'DrawerPricing', 
     'DrawerLineItem',
+    'DefaultDrawerSettings',
     'GenericLineItem'
 ] 

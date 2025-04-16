@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 from ..models import Style, PanelType, Design, WoodStock, EdgeProfile, PanelRise, RailDefaults
 from django.template.loader import render_to_string
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 def door_settings(request):
     """
@@ -34,18 +34,20 @@ def drawer_settings(request):
     """
     Render the drawer settings page with all drawer components
     """
-    from ..models.drawer import DrawerWoodStock, DrawerEdgeType, DrawerBottomSize, DrawerPricing
+    from ..models.drawer import DrawerWoodStock, DrawerEdgeType, DrawerBottomSize, DrawerPricing, DefaultDrawerSettings
     
     wood_stocks = DrawerWoodStock.objects.all()
     edge_types = DrawerEdgeType.objects.all()
     bottom_sizes = DrawerBottomSize.objects.all()
     pricing = DrawerPricing.objects.all()
+    drawer_defaults = DefaultDrawerSettings.objects.first()
     
     context = {
         'wood_stocks': wood_stocks,
         'edge_types': edge_types,
         'bottom_sizes': bottom_sizes,
         'pricing': pricing,
+        'drawer_defaults': drawer_defaults,
         'title': 'Drawer Settings'
     }
     
@@ -1311,4 +1313,59 @@ def add_panel_rise(request):
         return HttpResponse(html)
     
     # If not POST request, redirect to door settings
-    return redirect('door_settings') 
+    return redirect('door_settings')
+
+# Drawer Default Settings editing views
+def edit_drawer_defaults(request):
+    """
+    Switch the drawer default settings row to edit mode
+    """
+    from ..models.drawer import DefaultDrawerSettings
+    defaults = DefaultDrawerSettings.objects.first()
+    
+    if not defaults:
+        defaults = DefaultDrawerSettings.objects.create()
+    
+    context = {
+        'defaults': defaults,
+    }
+    
+    return render(request, 'settings/partials/drawer_defaults_row_edit.html', context)
+
+def get_drawer_defaults(request):
+    """
+    Return the drawer default settings row in display mode (for cancel button)
+    """
+    from ..models.drawer import DefaultDrawerSettings
+    defaults = DefaultDrawerSettings.objects.first()
+    
+    if not defaults:
+        defaults = DefaultDrawerSettings.objects.create()
+    
+    return render(request, 'settings/partials/drawer_defaults_row_display.html', {'defaults': defaults})
+
+def update_drawer_defaults(request):
+    """
+    Update the drawer default settings
+    """
+    from ..models.drawer import DefaultDrawerSettings
+    
+    if request.method == 'POST':
+        defaults = DefaultDrawerSettings.objects.first()
+        
+        if not defaults:
+            defaults = DefaultDrawerSettings.objects.create()
+        
+        defaults.surcharge_width = request.POST.get('surcharge_width', 0.00)
+        defaults.surcharge_depth = request.POST.get('surcharge_depth', 0.00)
+        defaults.surcharge_percent = request.POST.get('surcharge_percent', 0.00)
+        defaults.finish_charge = request.POST.get('finish_charge', 0.00)
+        defaults.undermount_charge = request.POST.get('undermount_charge', 0.00)
+        defaults.ends_cutting_adjustment = request.POST.get('ends_cutting_adjustment', 0.000)
+        defaults.sides_cutting_adjustment = request.POST.get('sides_cutting_adjustment', 0.000)
+        defaults.plywood_size_adjustment = request.POST.get('plywood_size_adjustment', 0.000)
+        defaults.save()
+        
+        return render(request, 'settings/partials/drawer_defaults_row_display.html', {'defaults': defaults})
+    
+    return HttpResponseBadRequest("Invalid request method") 

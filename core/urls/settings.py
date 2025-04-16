@@ -21,7 +21,8 @@ from ..views.settings import (
     show_drawer_woodstock_add, cancel_drawer_woodstock_add, add_drawer_woodstock,
     show_drawer_edgetype_add, cancel_drawer_edgetype_add, add_drawer_edgetype,
     show_drawer_bottom_add, cancel_drawer_bottom_add, add_drawer_bottom,
-    show_drawer_pricing_add, cancel_drawer_pricing_add, add_drawer_pricing
+    show_drawer_pricing_add, cancel_drawer_pricing_add, add_drawer_pricing,
+    edit_drawer_defaults, get_drawer_defaults, update_drawer_defaults
 )
 
 urlpatterns = [
@@ -112,4 +113,9 @@ urlpatterns = [
     path('doors/rail-defaults/edit/', edit_rail_defaults, name='edit_rail_defaults'),
     path('doors/rail-defaults/', get_rail_defaults, name='get_rail_defaults'),
     path('doors/rail-defaults/update/', update_rail_defaults, name='update_rail_defaults'),
+    
+    # Drawer Default Settings URLs
+    path('drawers/defaults/edit/', edit_drawer_defaults, name='edit_drawer_defaults'),
+    path('drawers/defaults/', get_drawer_defaults, name='get_drawer_defaults'),
+    path('drawers/defaults/update/', update_drawer_defaults, name='update_drawer_defaults'),
 ] 
