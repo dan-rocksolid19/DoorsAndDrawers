@@ -50,10 +50,23 @@ def create_order(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
+            # Check if there are items in the order
+            session_data = request.session.get('current_order', {})
+            items = session_data.get('items', [])
+            
+            if not items:
+                messages.error(request, "You need to add at least one item to create an order.")
+                return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
+            
+            # Check if a customer is associated with the order
+            if 'customer' not in session_data:
+                messages.error(request, "Please select a customer for this order.")
+                return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
+            
             # Use OrderService to create the order
             success, order, error = OrderService.create_from_session(
                 form.cleaned_data,
-                request.session.get('current_order', {}),
+                session_data,
                 is_quote=False
             )
             
@@ -66,9 +79,32 @@ def create_order(request):
                 messages.success(request, 'Order created successfully!')
                 return redirect('order_detail', order_id=order.id)
             else:
-                messages.error(request, error)
-                return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'})
+                # Provide more specific error messages based on the error type
+                if "Data integrity error" in error:
+                    messages.error(request, "There was a problem with the data in your order. Please check all fields and try again.")
+                elif "Database error" in error:
+                    messages.error(request, "There was a database problem. Please try again later.")
+                else:
+                    messages.error(request, error)
+                
+                return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
+        else:
+            # Form validation failed, display error messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        messages.error(request, error)
+                    else:
+                        messages.error(request, f"{form[field].label}: {error}")
+            
+            # Return the form with errors and 422 status code
+            return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
     else:
+        # Clear session data when first accessing the page (GET request)
+        if 'current_order' in request.session:
+            del request.session['current_order']
+            request.session.modified = True
+            
         form = OrderForm()
     
     return render(request, 'order/order_form.html', {
@@ -125,13 +161,17 @@ def get_customer_details(request):
             }
         }
         
-        # Add order to session
+        # Preserve existing items when changing customers
+        existing_items = []
+        if 'current_order' in request.session and 'items' in request.session['current_order']:
+            existing_items = request.session['current_order']['items']
+            
+        # Update order in session with new customer data but keep existing items
         request.session['current_order'] = {
             'customer': customer_id,
             'billing_address1': billing_address1,
             'billing_address2': billing_address2,
-            # 'order_date': order_date,
-            'items': []
+            'items': existing_items
         }
 
         request.session.modified = True

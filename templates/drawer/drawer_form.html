@@ -4,6 +4,14 @@
 <div id="drawer-form" class="bg-white shadow rounded-lg p-6">
     <h2 class="text-lg font-medium text-gray-900 mb-4">Drawer Details</h2>
     
+    {% if form.non_field_errors %}
+    <div class="mb-4 p-3 bg-red-50 border border-red-300 rounded text-red-700 text-sm">
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Left column: Wood, Bottom, Edge Type -->
         <div class="space-y-3">
@@ -120,7 +128,7 @@
                 hx-include="#drawer-form"
                 hx-target="#line-items-container"
                 hx-swap="innerHTML">
-            Add Drawer
+            Add
         </button>
     </div>
 </div>

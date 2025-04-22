@@ -4,7 +4,8 @@ Common view functions for order and quote listings and search functionality.
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from django_htmx.http import retarget, reswap
 
 
 def paginate_queryset(queryset, page, per_page=10):
@@ -165,6 +166,27 @@ def handle_entity_list(request, base_queryset, template_name, entity_name='items
     return render(request, template_name, context)
 
 
+def render_form_with_errors(request, form, item_type, error_message=None):
+    """
+    Helper function to render a form with errors and retarget it to the form container.
+    
+    Args:
+        request: The HTTP request
+        form: The form with errors
+        item_type: The type of item ('door', 'drawer', etc.)
+        error_message: Optional error message to add to the form
+        
+    Returns:
+        Rendered response with HTMX retargeting and appropriate status code
+    """
+    if error_message:
+        form.add_error(None, error_message)
+        
+    template_name = f"{item_type}/{item_type}_form.html"
+    response = render(request, template_name, {'form': form}, status=422)  # Return 422 Unprocessable Entity for validation errors
+    return retarget(reswap(response, "outerHTML"), "#door-form-container")
+
+
 def process_line_item_form(request, form_class, model_class, item_type, transform_data_func=None):
     """
     Process a line item form (door, drawer, etc.) and add to session.
@@ -180,17 +202,24 @@ def process_line_item_form(request, form_class, model_class, item_type, transfor
         Rendered response or JsonResponse (error)
     """
     try:
-        # Check if there's a current order in session
-        if not request.session.get("current_order"):
-            return JsonResponse({"error": "Select a customer."}, status=401)
+        # Initialize order in session if it doesn't exist
+        if 'current_order' not in request.session:
+            request.session['current_order'] = {
+                'items': []
+            }
+            request.session.modified = True
+        
+        # Initialize items array if it doesn't exist
+        if 'items' not in request.session['current_order']:
+            request.session['current_order']['items'] = []
+            request.session.modified = True
         
         # Use the form for validation
         form = form_class(request.POST)
         
         if not form.is_valid():
-            # Return form errors
-            errors = {field: errors[0] for field, errors in form.errors.items()}
-            return JsonResponse({'error': 'Form validation failed', 'field_errors': errors}, status=400)
+            # Render form with validation errors
+            return render_form_with_errors(request, form, item_type)
             
         # Get cleaned data
         cleaned_data = form.cleaned_data
@@ -200,15 +229,23 @@ def process_line_item_form(request, form_class, model_class, item_type, transfor
         price_per_unit_manual = request.POST.get('price_per_unit_manual')
         
         # Create a model instance for price calculation
-        item_model = model_class(**cleaned_data)
+        try:
+            item_model = model_class(**cleaned_data)
+        except Exception as e:
+            # Return form with error message for model creation issues
+            return render_form_with_errors(request, form, item_type, f'Could not create {item_type}: {str(e)}')
         
         # Apply custom price if provided
         if custom_price and price_per_unit_manual:
             try:
+                price_value = Decimal(price_per_unit_manual)
+                if price_value <= 0:
+                    raise ValueError("Price must be greater than zero")
+                    
                 item_model.custom_price = True
-                item_model.price_per_unit = Decimal(price_per_unit_manual)
-            except (ValueError, TypeError):
-                # If price_per_unit_manual is not a valid decimal, use calculated price
+                item_model.price_per_unit = price_value
+            except (InvalidOperation, ValueError) as e:
+                # If price_per_unit_manual is not valid, use calculated price
                 item_model.custom_price = False
                 item_model.price_per_unit = item_model.calculate_price()
         else:
@@ -216,31 +253,47 @@ def process_line_item_form(request, form_class, model_class, item_type, transfor
             item_model.price_per_unit = item_model.calculate_price()
         
         # Get the calculated price
-        price = item_model.price
+        try:
+            price = item_model.price
+        except Exception as e:
+            # Return form with error message for price calculation issues
+            return render_form_with_errors(request, form, item_type, f'Error calculating price: {str(e)}')
         
         # Create session item data
-        if transform_data_func:
-            # Use custom transformation function if provided
-            session_item = transform_data_func(cleaned_data, item_model, item_type, custom_price, price)
-        else:
-            # Default transformation (will need customization per item type)
-            session_item = {
-                'type': item_type,
-                'quantity': str(cleaned_data['quantity']),
-                'price_per_unit': str(item_model.price_per_unit),
-                'total_price': str(price),
-                'custom_price': custom_price
-            }
+        try:
+            if transform_data_func:
+                # Use custom transformation function if provided
+                session_item = transform_data_func(cleaned_data, item_model, item_type, custom_price, price)
+            else:
+                # Default transformation (will need customization per item type)
+                session_item = {
+                    'type': item_type,
+                    'quantity': str(cleaned_data['quantity']),
+                    'price_per_unit': str(item_model.price_per_unit),
+                    'total_price': str(price),
+                    'custom_price': custom_price
+                }
+        except Exception as e:
+            # Return form with error message for data preparation issues
+            return render_form_with_errors(request, form, item_type, f'Error preparing item data: {str(e)}')
         
         # Add the item to the session order
-        request.session['current_order']['items'].append(session_item)
-        # Mark session as modified
-        request.session.modified = True
+        try:
+            request.session['current_order']['items'].append(session_item)
+            # Mark session as modified
+            request.session.modified = True
+        except Exception as e:
+            # Return form with error message for session update issues
+            return render_form_with_errors(request, form, item_type, f'Error saving item to order: {str(e)}')
         
-        # Return updated line items table
-        return render(request, 'door/line_items_table.html', {
+        # Return updated line items table (success case - unmodified)
+        response = render(request, 'door/line_items_table.html', {
             'items': request.session['current_order']['items']
         })
+        # No need to add retarget for success case as we'll use the default target
+        return response
         
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500) 
+        # Handle unexpected errors
+        form = form_class(request.POST)
+        return render_form_with_errors(request, form, item_type, str(e))

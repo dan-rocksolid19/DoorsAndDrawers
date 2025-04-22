@@ -48,10 +48,23 @@ def create_quote(request):
     if request.method == 'POST':
         form = QuoteForm(request.POST)
         if form.is_valid():
+            # Check if there are items in the quote
+            session_data = request.session.get('current_order', {})
+            items = session_data.get('items', [])
+            
+            if not items:
+                messages.error(request, "You need to add at least one item to create a quote.")
+                return render(request, 'quote/quote_form.html', {'form': form, 'title': 'Create Quote'}, status=422)
+            
+            # Check if a customer is associated with the quote
+            if 'customer' not in session_data:
+                messages.error(request, "Please select a customer for this quote.")
+                return render(request, 'quote/quote_form.html', {'form': form, 'title': 'Create Quote'}, status=422)
+            
             # Use OrderService to create the quote
             success, quote, error = OrderService.create_from_session(
                 form.cleaned_data,
-                request.session.get('current_order', {}),
+                session_data,
                 is_quote=True
             )
             
@@ -64,9 +77,32 @@ def create_quote(request):
                 messages.success(request, 'Quote created successfully!')
                 return redirect('quote_detail', quote_id=quote.id)
             else:
-                messages.error(request, error)
-                return render(request, 'quote/quote_form.html', {'form': form, 'title': 'Create Quote'})
+                # Provide more specific error messages based on the error type
+                if "Data integrity error" in error:
+                    messages.error(request, "There was a problem with the data in your quote. Please check all fields and try again.")
+                elif "Database error" in error:
+                    messages.error(request, "There was a database problem. Please try again later.")
+                else:
+                    messages.error(request, error)
+                
+                return render(request, 'quote/quote_form.html', {'form': form, 'title': 'Create Quote'}, status=422)
+        else:
+            # Form validation failed, display error messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == '__all__':
+                        messages.error(request, error)
+                    else:
+                        messages.error(request, f"{form[field].label}: {error}")
+            
+            # Return the form with errors and 422 status code
+            return render(request, 'quote/quote_form.html', {'form': form, 'title': 'Create Quote'}, status=422)
     else:
+        # Clear session data when first accessing the page (GET request)
+        if 'current_order' in request.session:
+            del request.session['current_order']
+            request.session.modified = True
+            
         form = QuoteForm()
     
     return render(request, 'quote/quote_form.html', {

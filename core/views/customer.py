@@ -146,13 +146,13 @@ def customer_defaults(request, customer_id):
                 # For rail dimensions, only include if they differ from global defaults
                 if global_rail_defaults:
                     if door_form.cleaned_data['rail_top'] is not None and door_form.cleaned_data['rail_top'] != global_rail_defaults.top:
-                        door_data['rail_top'] = door_form.cleaned_data['rail_top']
+                        door_data['rail_top'] = str(door_form.cleaned_data['rail_top'])
                     if door_form.cleaned_data['rail_bottom'] is not None and door_form.cleaned_data['rail_bottom'] != global_rail_defaults.bottom:
-                        door_data['rail_bottom'] = door_form.cleaned_data['rail_bottom']
+                        door_data['rail_bottom'] = str(door_form.cleaned_data['rail_bottom'])
                     if door_form.cleaned_data['rail_left'] is not None and door_form.cleaned_data['rail_left'] != global_rail_defaults.left:
-                        door_data['rail_left'] = door_form.cleaned_data['rail_left']
+                        door_data['rail_left'] = str(door_form.cleaned_data['rail_left'])
                     if door_form.cleaned_data['rail_right'] is not None and door_form.cleaned_data['rail_right'] != global_rail_defaults.right:
-                        door_data['rail_right'] = door_form.cleaned_data['rail_right']
+                        door_data['rail_right'] = str(door_form.cleaned_data['rail_right'])
                 
                 # Handle removal of existing overrides if values now match global defaults
                 existing_keys = set(door_defaults.keys())
@@ -250,7 +250,7 @@ def customer_defaults(request, customer_id):
         'customer': customer,
         'door_form': door_form,
         'drawer_form': drawer_form,
-        'title': f'Defaults for {customer.company_name}',
+        'title': f'Defaults for {customer.company_name.title()}',
         'global_rail_defaults': global_rail_defaults
     }
     

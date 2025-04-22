@@ -23,11 +23,59 @@
 
 <div id="door-form-container" class="bg-white shadow rounded-lg p-6">
     <h2 class="text-lg font-medium text-gray-900 mb-4">Door Details</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Left column: Wood, Style, Edge, Panel Rise -->
-            <div class="space-y-3">
+    
+    {% if form.non_field_errors %}
+    <div class="mb-4 p-3 bg-red-50 border border-red-300 rounded text-red-700 text-sm">
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Left column: Wood, Style, Edge, Panel Rise -->
+        <div class="space-y-3">
+        {% for field in form %}
+            {% if field.name == 'wood_stock' or field.name == 'style' or field.name == 'edge_profile' or field.name == 'panel_rise' %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                {% render_field field %}
+                {% if field.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
+                {% endif %}
+                {% if field.help_text %}
+                    <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    
+    <!-- Right column: Width, Height, Rail dimensions, Quantity -->
+    <div class="space-y-3">
+        <!-- Width & Height in a 2-column layout -->
+        <div class="grid grid-cols-2 gap-4">
             {% for field in form %}
-                {% if field.name == 'wood_stock' or field.name == 'style' or field.name == 'edge_profile' or field.name == 'panel_rise' %}
+                {% if field.name == 'width' or field.name == 'height' %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }} (inches)</label>
+                    {% render_field field %}
+                    {% if field.errors %}
+                        <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <!-- Rail dimensions in a 2-column layout -->
+        <h3 class="text-sm font-medium text-gray-700 mt-2">Rail Dimensions (inches)</h3>
+        <div class="grid grid-cols-2 gap-4">
+            {% for field in form %}
+                {% if field.name == 'rail_top' or field.name == 'rail_bottom' or field.name == 'rail_left' or field.name == 'rail_right' %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
                     {% render_field field %}
@@ -42,90 +90,50 @@
             {% endfor %}
         </div>
         
-        <!-- Right column: Width, Height, Rail dimensions, Quantity -->
-        <div class="space-y-3">
-            <!-- Width & Height in a 2-column layout -->
-            <div class="grid grid-cols-2 gap-4">
-                {% for field in form %}
-                    {% if field.name == 'width' or field.name == 'height' %}
-                    <div class="form-group">
-                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }} (inches)</label>
-                        {% render_field field %}
-                        {% if field.errors %}
-                            <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
-                        {% endif %}
-                        {% if field.help_text %}
-                            <span class="text-xs text-gray-500">{{ field.help_text }}</span>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            
-            <!-- Rail dimensions in a 2-column layout -->
-            <h3 class="text-sm font-medium text-gray-700 mt-2">Rail Dimensions (inches)</h3>
-            <div class="grid grid-cols-2 gap-4">
-                {% for field in form %}
-                    {% if field.name == 'rail_top' or field.name == 'rail_bottom' or field.name == 'rail_left' or field.name == 'rail_right' %}
-                    <div class="form-group">
-                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
-                        {% render_field field %}
-                        {% if field.errors %}
-                            <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
-                        {% endif %}
-                        {% if field.help_text %}
-                            <span class="text-xs text-gray-500">{{ field.help_text }}</span>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            
-            <!-- Quantity -->
-            {% for field in form %}
-                {% if field.name == 'quantity' %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
-                    {% render_field field %}
-                    {% if field.errors %}
-                        <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
-                    {% endif %}
-                    {% if field.help_text %}
-                        <span class="text-xs text-gray-500">{{ field.help_text }}</span>
-                    {% endif %}
-                </div>
+        <!-- Quantity -->
+        {% for field in form %}
+            {% if field.name == 'quantity' %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                {% render_field field %}
+                {% if field.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ field.errors }}</div>
                 {% endif %}
-            {% endfor %}
-            
-            <!-- Custom Price Toggle -->
-            <div class="form-group mt-4">
-                <div class="flex items-center">
-                    <input type="checkbox" id="custom_price" name="custom_price" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                    <label for="custom_price" class="ml-2 block text-sm font-medium text-gray-700">
-                        Use Custom Price
-                    </label>
-                </div>
+                {% if field.help_text %}
+                    <span class="text-xs text-gray-500">{{ field.help_text }}</span>
+                {% endif %}
             </div>
-            
-            <!-- Custom Price Value -->
-            <div class="form-group mt-2 custom-price-field" style="display: none;">
-                <label for="price_per_unit_manual" class="block text-sm font-medium text-gray-700">Price Per Unit ($)</label>
-                <input type="number" id="price_per_unit_manual" name="price_per_unit_manual" step="0.01" min="0.01" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                <span class="text-xs text-gray-500">Enter a custom price per unit</span>
+            {% endif %}
+        {% endfor %}
+        
+        <!-- Custom Price Toggle -->
+        <div class="form-group mt-4">
+            <div class="flex items-center">
+                <input type="checkbox" id="custom_price" name="custom_price" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                <label for="custom_price" class="ml-2 block text-sm font-medium text-gray-700">
+                    Use Custom Price
+                </label>
             </div>
         </div>
+        
+        <!-- Custom Price Value -->
+        <div class="form-group mt-2 custom-price-field" style="display: none;">
+            <label for="price_per_unit_manual" class="block text-sm font-medium text-gray-700">Price Per Unit ($)</label>
+            <input type="number" id="price_per_unit_manual" name="price_per_unit_manual" step="0.01" min="0.01" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+            <span class="text-xs text-gray-500">Enter a custom price per unit</span>
+        </div>
     </div>
-    
-    <div class="mt-6">
-        <button type="button" 
-                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                hx-post="{% url 'new_door' %}"
-                hx-include="#door-form-container"
-                hx-target="#line-items-container"
-                hx-swap="innerHTML">
-            Add
-        </button>
-    </div>
+</div>
+
+<div class="mt-6">
+    <button type="button" 
+            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            hx-post="{% url 'new_door' %}"
+            hx-include="#door-form-container"
+            hx-target="#line-items-container"
+            hx-swap="innerHTML">
+        Add
+    </button>
 </div>
 
 <script>

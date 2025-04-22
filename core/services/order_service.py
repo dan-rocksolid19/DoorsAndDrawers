@@ -2,8 +2,7 @@
 Service for handling order and quote operations.
 """
 from decimal import Decimal
-from django.db import transaction
-
+from django.db import transaction, DatabaseError, IntegrityError
 from ..models import Order
 from ..models.door import DoorLineItem, RailDefaults
 from ..models.drawer import DrawerLineItem
@@ -20,6 +19,7 @@ class OrderService:
     def create_from_session(form_data, session_data, is_quote=False):
         """
         Create an order or quote from form data and session data.
+        Uses atomic transactions to ensure data integrity.
         
         Args:
             form_data (dict): The cleaned form data
@@ -35,21 +35,24 @@ class OrderService:
             return False, None, error
             
         try:
+            # Use atomic transaction to ensure all-or-nothing database operations
             with transaction.atomic():
                 # Create the order/quote base object
                 order_instance = OrderService._create_order_base(form_data, is_quote)
-                
                 # Process all line items
-                OrderService._process_line_items(order_instance, session_data.get('items', []))
-                
+                items_count = OrderService._process_line_items(order_instance, session_data.get('items', []))
+
                 # Calculate and save totals
                 order_instance.calculate_totals()
                 order_instance.save()
-                
+
                 return True, order_instance, None
                 
+        except IntegrityError as e:
+            return False, None, f"Data integrity error: {str(e)}"
+        except DatabaseError as e:
+            return False, None, f"Database error: {str(e)}"
         except Exception as e:
-            # In production, we would log this error
             return False, None, f"Error creating {'quote' if is_quote else 'order'}: {str(e)}"
 
     @staticmethod
@@ -72,7 +75,11 @@ class OrderService:
         if 'items' not in session_data or not session_data['items']:
             return False, "No line items found. Please add items before creating."
             
-        # Check if customer ID matches
+        # Check if a customer is selected
+        if 'customer' not in session_data:
+            return False, "Please select a customer before finalizing."
+            
+        # Check if customer ID matches the form
         session_customer = session_data.get('customer')
         form_customer = form_data.get('customer').id
         
@@ -115,8 +122,13 @@ class OrderService:
         Args:
             order (Order): The order instance
             line_items (list): List of line item dictionaries from session
+            
+        Returns:
+            int: Number of line items processed
         """
+        items_count = 0
         for item in line_items:
+            items_count += 1
             item_type = item.get('type')
             
             if item_type == 'door':
@@ -125,6 +137,8 @@ class OrderService:
                 OrderService._create_drawer_line_item(order, item)
             elif item_type == 'other':
                 OrderService._create_generic_line_item(order, item)
+
+        return items_count
 
     @staticmethod
     def _create_door_line_item(order, item_data):
