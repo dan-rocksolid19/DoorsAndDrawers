@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold">{{ title }}</h1>
+        <a href="{% url 'customer_detail' customer.id %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded inline-flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Customer
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Door Defaults Card -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Door Defaults</h2>
+            <form method="post" action="">
+                {% csrf_token %}
+                
+                <!-- Door Form Fields -->
+                <div class="space-y-4">
+                    <!-- Wood Stock -->
+                    <div>
+                        <label for="{{ door_form.wood_stock.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ door_form.wood_stock.label }}
+                        </label>
+                        {% render_field door_form.wood_stock class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                    </div>
+                    
+                    <!-- Edge Profile -->
+                    <div>
+                        <label for="{{ door_form.edge_profile.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ door_form.edge_profile.label }}
+                        </label>
+                        {% render_field door_form.edge_profile class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                    </div>
+                    
+                    <!-- Panel Rise -->
+                    <div>
+                        <label for="{{ door_form.panel_rise.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ door_form.panel_rise.label }}
+                        </label>
+                        {% render_field door_form.panel_rise class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                    </div>
+                    
+                    <!-- Style -->
+                    <div>
+                        <label for="{{ door_form.style.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ door_form.style.label }}
+                        </label>
+                        {% render_field door_form.style class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                    </div>
+                    
+                    <!-- Rails Section -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Rail Dimensions</h3>
+                        <p class="text-sm text-gray-500 mb-4">Values will only be saved when they differ from global defaults. Empty fields will use global defaults.</p>
+                        
+                        {% if global_rail_defaults %}
+                        <div class="bg-gray-50 p-3 mb-4 rounded text-sm">
+                            <div class="font-medium mb-1">Global Rail Defaults:</div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>Top: {{ global_rail_defaults.top }}</div>
+                                <div>Bottom: {{ global_rail_defaults.bottom }}</div>
+                                <div>Left: {{ global_rail_defaults.left }}</div>
+                                <div>Right: {{ global_rail_defaults.right }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Top Rail -->
+                            <div>
+                                <label for="{{ door_form.rail_top.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    {{ door_form.rail_top.label }}
+                                </label>
+                                {% render_field door_form.rail_top class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder=global_rail_defaults.top %}
+                            </div>
+                            
+                            <!-- Bottom Rail -->
+                            <div>
+                                <label for="{{ door_form.rail_bottom.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    {{ door_form.rail_bottom.label }}
+                                </label>
+                                {% render_field door_form.rail_bottom class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder=global_rail_defaults.bottom %}
+                            </div>
+                            
+                            <!-- Left Rail -->
+                            <div>
+                                <label for="{{ door_form.rail_left.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    {{ door_form.rail_left.label }}
+                                </label>
+                                {% render_field door_form.rail_left class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder=global_rail_defaults.left %}
+                            </div>
+                            
+                            <!-- Right Rail -->
+                            <div>
+                                <label for="{{ door_form.rail_right.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    {{ door_form.rail_right.label }}
+                                </label>
+                                {% render_field door_form.rail_right class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder=global_rail_defaults.right %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" name="door_form" class="mt-6 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Save Door Defaults
+                </button>
+            </form>
+        </div>
+        
+        <!-- Drawer Defaults Card -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Drawer Defaults</h2>
+            <form method="post" action="">
+                {% csrf_token %}
+                
+                <!-- Drawer Form Fields -->
+                <div class="space-y-4">
+                    <!-- Wood Stock -->
+                    <div>
+                        <label for="{{ drawer_form.wood_stock.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ drawer_form.wood_stock.label }}
+                        </label>
+                        {% render_field drawer_form.wood_stock class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                    </div>
+                    
+                    <!-- Edge Type -->
+                    <div>
+                        <label for="{{ drawer_form.edge_type.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ drawer_form.edge_type.label }}
+                        </label>
+                        {% render_field drawer_form.edge_type class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                    </div>
+                    
+                    <!-- Bottom -->
+                    <div>
+                        <label for="{{ drawer_form.bottom.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ drawer_form.bottom.label }}
+                        </label>
+                        {% render_field drawer_form.bottom class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
+                    </div>
+                    
+                    <!-- Options Section -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Options</h3>
+                        
+                        <!-- Undermount -->
+                        <div class="flex items-start mt-3">
+                            <div class="flex items-center h-5">
+                                {% render_field drawer_form.undermount class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" %}
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ drawer_form.undermount.id_for_label }}" class="font-medium text-gray-700">
+                                    {{ drawer_form.undermount.label }}
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Finishing -->
+                        <div class="flex items-start mt-3">
+                            <div class="flex items-center h-5">
+                                {% render_field drawer_form.finishing class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" %}
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ drawer_form.finishing.id_for_label }}" class="font-medium text-gray-700">
+                                    {{ drawer_form.finishing.label }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" name="drawer_form" class="mt-6 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Save Drawer Defaults
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

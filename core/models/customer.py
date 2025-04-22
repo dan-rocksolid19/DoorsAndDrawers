@@ -53,6 +53,19 @@ class Customer(BaseModel):
         blank=True,
         verbose_name="Notes"
     )
+    
+    # Add JSON fields for door and drawer defaults
+    door_defaults = models.JSONField(
+        default=dict, 
+        blank=True,
+        help_text="Door default preferences for this customer"
+    )
+    
+    drawer_defaults = models.JSONField(
+        default=dict, 
+        blank=True,
+        help_text="Drawer default preferences for this customer"
+    )
 
     class Meta:
         verbose_name = "Customer"
@@ -87,6 +100,70 @@ class Customer(BaseModel):
         if not self.fax.isdigit():
             self.fax = ''.join(filter(str.isdigit, self.fax))
         super().save(*args, **kwargs)
+    
+    def get_door_defaults(self):
+        """
+        Get door defaults for this customer.
+        Returns only customer-specific defaults from the JSON field.
+        Does not include global defaults - these should be applied by the view/service
+        that uses these values.
+        """
+        # Simply return the customer defaults as is - no filtering or additions
+        return self.door_defaults.copy() if self.door_defaults else {}
+    
+    def get_drawer_defaults(self):
+        """
+        Get drawer defaults for this customer.
+        Returns customer-specific defaults from the JSON field if present,
+        otherwise returns global defaults.
+        """
+        if self.drawer_defaults:
+            return self.drawer_defaults
+        else:
+            # No need to fallback as the drawer global settings are used by the view
+            # and not directly comparable to our JSON structure
+            return {}
+            
+    def set_door_defaults(self, **kwargs):
+        """
+        Set door defaults for this customer.
+        Accepts keyword arguments for door properties.
+        If a value is None, it will remove that key from door_defaults.
+        """
+        # Convert model instances to IDs for JSON serialization
+        for key, value in list(kwargs.items()):
+            if value is None:
+                # Remove this key from door_defaults
+                if key in self.door_defaults:
+                    self.door_defaults.pop(key)
+                # Remove from kwargs to avoid storing None values
+                kwargs.pop(key)
+            elif hasattr(value, 'pk'):
+                kwargs[key] = value.pk
+                
+        # Update the door_defaults field with remaining values
+        if not self.door_defaults:
+            self.door_defaults = {}
+            
+        self.door_defaults.update(kwargs)
+        self.save(update_fields=['door_defaults'])
+        
+    def set_drawer_defaults(self, **kwargs):
+        """
+        Set drawer defaults for this customer.
+        Accepts keyword arguments for drawer properties.
+        """
+        # Convert model instances to IDs for JSON serialization
+        for key, value in kwargs.items():
+            if hasattr(value, 'pk'):
+                kwargs[key] = value.pk
+                
+        # Update the drawer_defaults field
+        if not self.drawer_defaults:
+            self.drawer_defaults = {}
+            
+        self.drawer_defaults.update(kwargs)
+        self.save(update_fields=['drawer_defaults'])
 
 class CustomerDefaults(BaseModel):
     customer = models.OneToOneField(

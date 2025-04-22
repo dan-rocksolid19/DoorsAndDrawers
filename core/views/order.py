@@ -1,43 +1,26 @@
-from ftplib import all_errors
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from ..forms import OrderForm
 from ..models import Order
 from django.http import HttpResponse, JsonResponse
 from ..models.customer import Customer
-from ..models.door import DoorLineItem, RailDefaults
-from django.db import transaction
-from decimal import Decimal
+from ..models.door import DoorLineItem
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from itertools import chain
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from ..services.order_service import OrderService
+from .common import handle_entity_search, handle_entity_list
 
 def orders(request):
-    order_list = Order.confirmed.all().select_related('customer')
-    page = request.GET.get('page', 1)
-    
-    # Paginate results
-    paginator = Paginator(order_list, 10)  # 10 orders per page
-    
-    try:
-        orders = paginator.page(page)
-    except PageNotAnInteger:
-        orders = paginator.page(1)
-    except EmptyPage:
-        orders = paginator.page(paginator.num_pages)
-    
-    return render(request, 'order/orders.html', {
-        'orders': orders,
-        'paginator': paginator,
-        'min_id': '',
-        'max_id': '',
-        'start_date': '',
-        'end_date': '',
-        'customer_search': '',
-        'title': 'Orders'
-    })
+    """List all confirmed orders with pagination."""
+    # Use the common list handler with order-specific parameters
+    return handle_entity_list(
+        request,
+        Order.confirmed.all().select_related('customer'),
+        'order/orders.html',
+        'orders',
+        'Orders'
+    )
 
 def order_detail(request, order_id):
     order = get_object_or_404(Order.confirmed, id=order_id)
@@ -67,128 +50,23 @@ def create_order(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
-            # Check if there's order data in the session
-            if 'current_order' not in request.session or not request.session['current_order'].get('items'):
-                messages.error(request, 'No line items found. Please add items to your order.')
-                return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'})
-                
-            # Validate session data matches submitted form data
-            session_customer = request.session['current_order'].get('customer')
-            form_customer = form.cleaned_data.get('customer').id
-            if str(session_customer) != str(form_customer):
-                messages.error(request, 'Customer information mismatch. Please try again.')
-                return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'})
+            # Use OrderService to create the order
+            success, order, error = OrderService.create_from_session(
+                form.cleaned_data,
+                request.session.get('current_order', {}),
+                is_quote=False
+            )
             
-            # Begin database transaction
-            try:
-                with transaction.atomic():
-                    # Save the order
-                    order = form.save()
-                    
-                    # Process line items from session
-                    line_items = request.session['current_order'].get('items', [])
-                    for item in line_items:
-                        if item.get('type') == 'door':
-                            # Get door components
-                            width = Decimal(item['width'])
-                            height = Decimal(item['height'])
-                            quantity = int(item['quantity'])
-                            custom_price = item.get('custom_price', False)
-                            
-                            # Only use the stored price_per_unit if custom_price is True
-                            price_per_unit = Decimal(item['price_per_unit']) if custom_price else Decimal('0.00')
-
-                            # Create door line item using values from the form/session
-                            door_item = DoorLineItem(
-                                order=order,
-                                wood_stock_id=item['wood_stock']['id'],
-                                edge_profile_id=item['edge_profile']['id'],
-                                panel_rise_id=item['panel_rise']['id'],
-                                style_id=item['style']['id'],
-                                width=width,
-                                height=height,
-                                quantity=quantity,
-                                price_per_unit=price_per_unit,
-                                # Use rail dimensions directly from session data
-                                rail_top=Decimal(item['rail_top']),
-                                rail_bottom=Decimal(item['rail_bottom']),
-                                rail_left=Decimal(item['rail_left']),
-                                rail_right=Decimal(item['rail_right']),
-                                # Save custom price flag if it exists
-                                custom_price=custom_price
-                            )
-                            door_item.save()
-                        # Handle other item types here (drawers, etc.) as needed
-                        elif item.get('type') == 'drawer':
-                            # Get drawer components
-                            width = Decimal(item['width'])
-                            height = Decimal(item['height'])
-                            depth = Decimal(item['depth'])
-                            quantity = int(item['quantity'])
-                            custom_price = item.get('custom_price', False)
-                            
-                            # Only use the stored price_per_unit if custom_price is True
-                            price_per_unit = Decimal(item['price_per_unit']) if custom_price else Decimal('0.00')
-
-                            # Import here to avoid circular imports
-                            from ..models.drawer import DrawerLineItem
-                            
-                            # Create drawer line item using values from the form/session
-                            drawer_item = DrawerLineItem(
-                                order=order,
-                                wood_stock_id=item['wood_stock']['id'],
-                                edge_type_id=item['edge_type']['id'],
-                                bottom_id=item['bottom']['id'],
-                                width=width,
-                                height=height,
-                                depth=depth,
-                                quantity=quantity,
-                                price_per_unit=price_per_unit,
-                                undermount=item.get('undermount', False),
-                                finishing=item.get('finishing', False),
-                                # Save custom price flag if it exists
-                                custom_price=custom_price
-                            )
-                            drawer_item.save()
-                        # Handle generic items
-                        elif item.get('type') == 'other':
-                            # Get item details
-                            name = item.get('name')
-                            quantity = int(item.get('quantity'))
-                            custom_price = item.get('custom_price', False)
-                            
-                            # Only use the stored price_per_unit if custom_price is True
-                            price_per_unit = Decimal(item.get('price_per_unit'))
-                            
-                            # Import here to avoid circular imports
-                            from ..models.line_item import GenericLineItem
-                            
-                            # Create generic line item
-                            generic_item = GenericLineItem(
-                                order=order,
-                                name=name,
-                                quantity=quantity,
-                                price_per_unit=price_per_unit,
-                                # Save custom price flag if it exists
-                                custom_price=custom_price
-                            )
-                            generic_item.save()
-                    
-                    # Calculate and save order totals
-                    order.calculate_totals()
-                    order.save()
-                    
-                    # Clear session data after successful save
-                    if 'current_order' in request.session:
-                        del request.session['current_order']
-                        request.session.modified = True
-                    
-                    messages.success(request, 'Order created successfully!')
-                    return redirect('order_detail', order_id=order.id)
-            except Exception as e:
-                # Log the error for debugging (would implement proper logging in production)
-                print(f"Error creating order: {str(e)}")
-                messages.error(request, f'Error creating order: {str(e)}')
+            if success:
+                # Clear session data
+                if 'current_order' in request.session:
+                    del request.session['current_order']
+                    request.session.modified = True
+                
+                messages.success(request, 'Order created successfully!')
+                return redirect('order_detail', order_id=order.id)
+            else:
+                messages.error(request, error)
                 return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'})
     else:
         form = OrderForm()
@@ -273,61 +151,14 @@ def get_customer_details(request):
         })
 
 def order_search(request):
-    min_id = request.GET.get('min_id', '')
-    max_id = request.GET.get('max_id', '')
-    start_date = request.GET.get('start_date', '')
-    end_date = request.GET.get('end_date', '')
-    customer_query = request.GET.get('customer_search', '').strip()
-    page = request.GET.get('page', 1)
-    
-    # Start with all orders
-    orders_query = Order.confirmed.all().select_related('customer')
-    
-    # Apply filters if provided
-    if min_id and min_id.isdigit():
-        orders_query = orders_query.filter(id__gte=int(min_id))
-    
-    if max_id and max_id.isdigit():
-        orders_query = orders_query.filter(id__lte=int(max_id))
-    
-    # Apply date filters if provided
-    try:
-        if start_date:
-            orders_query = orders_query.filter(order_date__gte=start_date)
-        
-        if end_date:
-            orders_query = orders_query.filter(order_date__lte=end_date)
-    except ValueError:
-        # If date format is invalid, return all orders
-        pass
-    
-    # Apply customer filter if provided
-    if customer_query:
-        orders_query = orders_query.filter(customer__company_name__icontains=customer_query)
-    
-    # Order by descending order date (newest first)
-    orders_query = orders_query.order_by('-order_date')
-    
-    # Paginate results
-    paginator = Paginator(orders_query, 10)  # 10 orders per page
-    
-    try:
-        orders = paginator.page(page)
-    except PageNotAnInteger:
-        orders = paginator.page(1)
-    except EmptyPage:
-        orders = paginator.page(paginator.num_pages)
-    
-    # Return the paginated results
-    return render(request, 'order/partials/order_results.html', {
-        'orders': orders,
-        'min_id': min_id,
-        'max_id': max_id,
-        'start_date': start_date,
-        'end_date': end_date,
-        'customer_search': customer_query,
-        'paginator': paginator
-    })
+    """Search and filter orders based on criteria."""
+    # Use the common search handler with order-specific parameters
+    return handle_entity_search(
+        request,
+        Order.confirmed.all().select_related('customer'),
+        'order/partials/order_results.html',
+        'orders'
+    )
 
 def remove_line_item(request, item_id):
     """

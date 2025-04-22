@@ -843,10 +843,10 @@ def edit_panel_type(request, type_id):
     """
     Switch a panel type row to edit mode
     """
-    type = get_object_or_404(PanelType, id=type_id)
+    panel_type = get_object_or_404(PanelType, id=type_id)
     
     context = {
-        'type': type,
+        'type': panel_type,
     }
     
     return render(request, 'settings/partials/panel_type_row_edit.html', context)
@@ -855,9 +855,9 @@ def get_panel_type(request, type_id):
     """
     Return a panel type row in display mode (for cancel button)
     """
-    type = get_object_or_404(PanelType, id=type_id)
+    panel_type = get_object_or_404(PanelType, id=type_id)
     
-    return render(request, 'settings/partials/panel_type_row_display.html', {'type': type})
+    return render(request, 'settings/partials/panel_type_row_display.html', {'type': panel_type})
 
 def update_panel_type(request, type_id):
     """

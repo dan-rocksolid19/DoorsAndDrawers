@@ -1,12 +1,9 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 from ..models.drawer import DrawerLineItem, DrawerWoodStock, DrawerEdgeType, DrawerBottomSize
 from ..forms import DrawerForm
-from decimal import Decimal
-import json
-from django.urls import reverse
-from core.models import Order
+from .common import process_line_item_form
+from .door import get_current_customer
 
 def drawer_form(request):
     """Render the drawer form partial template."""
@@ -14,7 +11,42 @@ def drawer_form(request):
     edge_types = DrawerEdgeType.objects.all()
     bottom_sizes = DrawerBottomSize.objects.all()
     
-    form = DrawerForm()
+    # Initial data for the form
+    initial_data = {}
+    
+    # Check if we have a customer in the session
+    customer = get_current_customer(request)
+    
+    # If we have a customer, get their defaults
+    if customer:
+        drawer_defaults = customer.get_drawer_defaults()
+        
+        # Apply known defaults from JSON
+        if 'wood_stock' in drawer_defaults:
+            try:
+                initial_data['wood_stock'] = DrawerWoodStock.objects.get(pk=drawer_defaults['wood_stock'])
+            except (DrawerWoodStock.DoesNotExist, ValueError, TypeError):
+                pass
+                
+        if 'edge_type' in drawer_defaults:
+            try:
+                initial_data['edge_type'] = DrawerEdgeType.objects.get(pk=drawer_defaults['edge_type'])
+            except (DrawerEdgeType.DoesNotExist, ValueError, TypeError):
+                pass
+                
+        if 'bottom' in drawer_defaults:
+            try:
+                initial_data['bottom'] = DrawerBottomSize.objects.get(pk=drawer_defaults['bottom'])
+            except (DrawerBottomSize.DoesNotExist, ValueError, TypeError):
+                pass
+        
+        # Apply boolean options
+        for option in ['undermount', 'finishing']:
+            if option in drawer_defaults:
+                initial_data[option] = drawer_defaults[option]
+    
+    # Create form with initial data
+    form = DrawerForm(initial=initial_data)
     
     context = {
         'form': form,
@@ -25,74 +57,34 @@ def drawer_form(request):
     
     return render(request, 'drawer/drawer_form.html', context)
 
+def transform_drawer_data(cleaned_data, drawer_model, item_type, custom_price, price):
+    """Transform drawer form data to session format"""
+    return {
+        'type': item_type,
+        'wood_stock': {'id': cleaned_data['wood_stock'].pk, 'name': cleaned_data['wood_stock'].name},
+        'edge_type': {'id': cleaned_data['edge_type'].pk, 'name': cleaned_data['edge_type'].name},
+        'bottom': {'id': cleaned_data['bottom'].pk, 'name': cleaned_data['bottom'].name},
+        'width': str(cleaned_data['width']),
+        'height': str(cleaned_data['height']),
+        'depth': str(cleaned_data['depth']),
+        'quantity': str(cleaned_data['quantity']),
+        'undermount': cleaned_data['undermount'],
+        'finishing': cleaned_data['finishing'],
+        'price_per_unit': str(drawer_model.price_per_unit),
+        'total_price': str(price),
+        'custom_price': custom_price
+    }
+
 @require_http_methods(["POST"])
 def add_drawer(request):
     """
     View to handle adding a drawer.
     Receives payload with drawer specifications and adds to session-based order.
     """
-    try:
-        if not request.session.get("current_order"):
-            return JsonResponse({"error": "Select a customer."}, status=401)
-        
-        # Use the DrawerForm for validation
-        form = DrawerForm(request.POST)
-        
-        if not form.is_valid():
-            # Return form errors
-            errors = {field: errors[0] for field, errors in form.errors.items()}
-            return JsonResponse({'error': 'Form validation failed', 'field_errors': errors}, status=400)
-            
-        # Get cleaned data from the form
-        cleaned_data = form.cleaned_data
-        
-        # Get custom price information (using the drawer-specific field names)
-        custom_price = request.POST.get('custom_price') == 'on'
-        price_per_unit_manual = request.POST.get('price_per_unit_manual')
-        
-        # Create a DrawerLineItem model instance for price calculation
-        drawer_item_model=DrawerLineItem(**cleaned_data)
-
-        # Apply custom price if provided
-        if custom_price and price_per_unit_manual:
-            try:
-                drawer_item_model.custom_price = True
-                drawer_item_model.price_per_unit = Decimal(price_per_unit_manual)
-            except (ValueError, TypeError):
-                # If price_per_unit_manual is not a valid decimal, use calculated price
-                drawer_item_model.custom_price = False
-        else:
-            drawer_item_model.custom_price = False
-            drawer_item_model.price_per_unit = drawer_item_model.calculate_price()
-
-        # Get the calculated price
-        price = drawer_item_model.price
-        
-        # Create drawer item for session storage
-        drawer_item = {
-            'type': 'drawer',
-            'wood_stock': {'id': cleaned_data['wood_stock'].pk, 'name': cleaned_data['wood_stock'].name},
-            'edge_type': {'id': cleaned_data['edge_type'].pk, 'name': cleaned_data['edge_type'].name},
-            'bottom': {'id': cleaned_data['bottom'].pk, 'name': cleaned_data['bottom'].name},
-            'width': str(cleaned_data['width']),
-            'height': str(cleaned_data['height']),
-            'depth': str(cleaned_data['depth']),
-            'quantity': str(cleaned_data['quantity']),
-            'undermount': cleaned_data['undermount'],
-            'finishing': cleaned_data['finishing'],
-            'price_per_unit': str(drawer_item_model.price_per_unit),
-            'total_price': str(price),
-            'custom_price': custom_price
-        }
-        
-        # Add the drawer to the session order
-        request.session['current_order']['items'].append(drawer_item)
-        # Mark session as modified
-        request.session.modified = True
-        
-        return render(request, 'door/line_items_table.html', {
-            'items': request.session['current_order']['items']
-        })
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500) 
+    return process_line_item_form(
+        request, 
+        DrawerForm, 
+        DrawerLineItem, 
+        'drawer',
+        transform_drawer_data
+    ) 

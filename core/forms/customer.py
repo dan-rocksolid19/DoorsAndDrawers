@@ -1,5 +1,7 @@
 from django import forms
 from ..models.customer import Customer, CustomerDefaults
+from ..models.door import WoodStock, EdgeProfile, PanelRise, Style
+from ..models.drawer import DrawerWoodStock, DrawerEdgeType, DrawerBottomSize
 
 class PhoneNumberWidget(forms.TextInput):
     def value_from_datadict(self, data, files, name):
@@ -128,4 +130,78 @@ class CustomerForm(forms.ModelForm):
                 defaults.shipping_type = self.cleaned_data['shipping_type']
                 defaults.shipping_value = self.cleaned_data['shipping_value']
                 defaults.save()
-        return customer 
+        return customer
+
+class CustomerDoorDefaultsForm(forms.Form):
+    """Form for managing customer door defaults"""
+    wood_stock = forms.ModelChoiceField(
+        queryset=WoodStock.objects.all(),
+        required=False,
+        label="Default Wood Stock"
+    )
+    edge_profile = forms.ModelChoiceField(
+        queryset=EdgeProfile.objects.all(),
+        required=False,
+        label="Default Edge Profile"
+    )
+    panel_rise = forms.ModelChoiceField(
+        queryset=PanelRise.objects.all(),
+        required=False,
+        label="Default Panel Rise"
+    )
+    style = forms.ModelChoiceField(
+        queryset=Style.objects.all(),
+        required=False,
+        label="Default Style"
+    )
+    rail_top = forms.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        required=False,
+        label="Default Top Rail Size (inches)"
+    )
+    rail_bottom = forms.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        required=False,
+        label="Default Bottom Rail Size (inches)"
+    )
+    rail_left = forms.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        required=False,
+        label="Default Left Rail Size (inches)"
+    )
+    rail_right = forms.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        required=False,
+        label="Default Right Rail Size (inches)"
+    )
+
+
+class CustomerDrawerDefaultsForm(forms.Form):
+    """Form for managing customer drawer defaults"""
+    wood_stock = forms.ModelChoiceField(
+        queryset=DrawerWoodStock.objects.all(),
+        required=False,
+        label="Default Wood Stock"
+    )
+    edge_type = forms.ModelChoiceField(
+        queryset=DrawerEdgeType.objects.all(),
+        required=False,
+        label="Default Edge Type"
+    )
+    bottom = forms.ModelChoiceField(
+        queryset=DrawerBottomSize.objects.all(),
+        required=False,
+        label="Default Bottom Size"
+    )
+    undermount = forms.BooleanField(
+        required=False,
+        label="Use Undermount Slides by Default"
+    )
+    finishing = forms.BooleanField(
+        required=False,
+        label="Apply Finishing by Default"
+    ) 

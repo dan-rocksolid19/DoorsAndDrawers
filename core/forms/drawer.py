@@ -1,5 +1,5 @@
 from django import forms
-from ..models.drawer import DrawerLineItem, DrawerWoodStock, DrawerEdgeType, DrawerBottomSize
+from ..models.drawer import DrawerLineItem
 
 class DrawerForm(forms.ModelForm):
     """Form for creating and editing drawers"""

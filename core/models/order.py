@@ -1,7 +1,6 @@
 from django.db import models
 from itertools import chain
 from .base import BaseModel
-from .line_item import LineItem, GenericLineItem
 
 class QuoteManager(models.Manager):
     def get_queryset(self):
