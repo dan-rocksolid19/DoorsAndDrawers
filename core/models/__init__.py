@@ -10,7 +10,8 @@ from .door import (
     PanelRise, 
     Style, 
     DoorLineItem,
-    RailDefaults
+    RailDefaults,
+    MiscellaneousDoorSettings
 )
 from .drawer import (
     DrawerWoodStock,
@@ -37,6 +38,7 @@ __all__ = [
     'Style',
     'DoorLineItem',
     'RailDefaults',
+    'MiscellaneousDoorSettings',
     'DrawerWoodStock',
     'DrawerEdgeType',
     'DrawerBottomSize',

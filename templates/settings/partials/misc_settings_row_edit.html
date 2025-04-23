@@ -1,0 +1,93 @@
+<tr>
+    <form hx-post="{% url 'update_misc_settings' %}" hx-target="closest tr">
+        {% csrf_token %}
+        <td class="px-6 py-4 whitespace-nowrap">
+            <input type="number" 
+                   name="extra_height" 
+                   value="{{ settings.extra_height }}" 
+                   step="0.001"
+                   min="0.001"
+                   class="block w-full px-2 py-1 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                   required>
+            {% if errors.extra_height %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.extra_height.0 }}</p>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <input type="number" 
+                   name="extra_width" 
+                   value="{{ settings.extra_width }}" 
+                   step="0.001"
+                   min="0.001"
+                   class="block w-full px-2 py-1 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                   required>
+            {% if errors.extra_width %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.extra_width.0 }}</p>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <input type="number" 
+                   name="glue_min_width" 
+                   value="{{ settings.glue_min_width }}" 
+                   step="0.001"
+                   min="0.001"
+                   class="block w-full px-2 py-1 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                   required>
+            {% if errors.glue_min_width %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.glue_min_width.0 }}</p>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <input type="number" 
+                   name="rail_extra" 
+                   value="{{ settings.rail_extra }}" 
+                   step="0.001"
+                   min="0.001"
+                   class="block w-full px-2 py-1 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                   required>
+            {% if errors.rail_extra %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.rail_extra.0 }}</p>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <select name="drawer_front" 
+                    class="block w-full px-2 py-1 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                    required>
+                {% for panel_type in panel_types %}
+                <option value="{{ panel_type.id }}" {% if panel_type.id == settings.drawer_front.id %}selected{% endif %}>
+                    {{ panel_type.name }}
+                </option>
+                {% endfor %}
+            </select>
+            {% if errors.drawer_front %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.drawer_front.0 }}</p>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <select name="drawer_slab" 
+                    class="block w-full px-2 py-1 text-sm border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                    required>
+                {% for panel_type in panel_types %}
+                <option value="{{ panel_type.id }}" {% if panel_type.id == settings.drawer_slab.id %}selected{% endif %}>
+                    {{ panel_type.name }}
+                </option>
+                {% endfor %}
+            </select>
+            {% if errors.drawer_slab %}
+            <p class="mt-1 text-xs text-red-600">{{ errors.drawer_slab.0 }}</p>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+            <button type="submit" 
+                    class="text-green-600 hover:text-green-900">
+                Save
+            </button>
+            <button type="button"
+                    hx-get="{% url 'get_misc_settings' %}"
+                    hx-target="closest tr"
+                    class="text-gray-600 hover:text-gray-900">
+                Cancel
+            </button>
+        </td>
+    </form>
+</tr> 

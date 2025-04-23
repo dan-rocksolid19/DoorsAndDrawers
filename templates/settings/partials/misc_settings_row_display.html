@@ -1,0 +1,15 @@
+<tr>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ settings.extra_height }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ settings.extra_width }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ settings.glue_min_width }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ settings.rail_extra }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ settings.drawer_front.name }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ settings.drawer_slab.name }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <button hx-get="{% url 'edit_misc_settings' %}"
+                hx-target="closest tr"
+                class="text-indigo-600 hover:text-indigo-900">
+            Edit
+        </button>
+    </td>
+</tr> 

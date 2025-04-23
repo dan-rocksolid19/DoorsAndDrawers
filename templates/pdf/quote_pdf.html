@@ -160,7 +160,8 @@
                     <th>Panel Rise</th>
                     <th>Style</th>
                     <th>Dimensions (W×H)</th>
-                    <th>Rails (T×B×L×R)</th>
+                    <th>Rails (T×B×L×R×I)</th>
+                    <th>Sanding</th>
                     <th>Quantity</th>
                     <th>Price/Unit</th>
                     <th>Total</th>
@@ -175,7 +176,8 @@
                     <td>{{ item.panel_rise.name }}</td>
                     <td>{{ item.style.name }}</td>
                     <td>{{ item.width }} × {{ item.height }}</td>
-                    <td>{{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}</td>
+                    <td>{{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }} × {{ item.interior_rail_size }}</td>
+                    <td>{% if item.sand_edge %}Edge, {% endif %}{% if item.sand_cross_grain %}Cross Grain{% endif %}{% if not item.sand_edge and not item.sand_cross_grain %}None{% endif %}</td>
                     <td>{{ item.quantity }}</td>
                     <td>${{ item.price_per_unit|floatformat:2 }}</td>
                     <td>${{ item.total_price|floatformat:2 }}</td>

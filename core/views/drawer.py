@@ -24,19 +24,25 @@ def drawer_form(request):
         # Apply known defaults from JSON
         if 'wood_stock' in drawer_defaults:
             try:
-                initial_data['wood_stock'] = DrawerWoodStock.objects.get(pk=drawer_defaults['wood_stock'])
+                wood_stock_id = drawer_defaults['wood_stock']
+                if isinstance(wood_stock_id, (int, str)):  # Ensure we have an ID
+                    initial_data['wood_stock'] = DrawerWoodStock.objects.get(pk=wood_stock_id)
             except (DrawerWoodStock.DoesNotExist, ValueError, TypeError):
                 pass
                 
         if 'edge_type' in drawer_defaults:
             try:
-                initial_data['edge_type'] = DrawerEdgeType.objects.get(pk=drawer_defaults['edge_type'])
+                edge_type_id = drawer_defaults['edge_type']
+                if isinstance(edge_type_id, (int, str)):  # Ensure we have an ID
+                    initial_data['edge_type'] = DrawerEdgeType.objects.get(pk=edge_type_id)
             except (DrawerEdgeType.DoesNotExist, ValueError, TypeError):
                 pass
                 
         if 'bottom' in drawer_defaults:
             try:
-                initial_data['bottom'] = DrawerBottomSize.objects.get(pk=drawer_defaults['bottom'])
+                bottom_id = drawer_defaults['bottom']
+                if isinstance(bottom_id, (int, str)):  # Ensure we have an ID
+                    initial_data['bottom'] = DrawerBottomSize.objects.get(pk=bottom_id)
             except (DrawerBottomSize.DoesNotExist, ValueError, TypeError):
                 pass
         
@@ -57,7 +63,7 @@ def drawer_form(request):
     
     return render(request, 'drawer/drawer_form.html', context)
 
-def transform_drawer_data(cleaned_data, drawer_model, item_type, custom_price, price):
+def transform_drawer_data(request, cleaned_data, drawer_model, item_type, custom_price, price):
     """Transform drawer form data to session format"""
     return {
         'type': item_type,

@@ -67,7 +67,8 @@ class CustomerForm(forms.ModelForm):
             'zip_code',
             'phone',
             'fax',
-            'notes'
+            'notes',
+            'taxable'
         ]
         widgets = {
             'notes': forms.Textarea(attrs={'rows': 3}),
@@ -177,6 +178,20 @@ class CustomerDoorDefaultsForm(forms.Form):
         decimal_places=3,
         required=False,
         label="Default Right Rail Size (inches)"
+    )
+    interior_rail_size = forms.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        required=False,
+        label="Default Interior Rail Size (inches)"
+    )
+    sand_edge = forms.BooleanField(
+        required=False,
+        label="Sand Edge by Default"
+    )
+    sand_cross_grain = forms.BooleanField(
+        required=False,
+        label="Sand Cross Grain by Default"
     )
 
 

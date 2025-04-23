@@ -111,7 +111,8 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Panel Rise</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Style</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dimensions (W×H)</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rails (T×B×L×R)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rails (T×B×L×R×I)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sanding</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price/Unit</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
@@ -126,7 +127,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.panel_rise.name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.style.name }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.width }} × {{ item.height }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }} × {{ item.interior_rail_size }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if item.sand_edge %}Edge, {% endif %}
+                                    {% if item.sand_cross_grain %}Cross Grain{% endif %}
+                                    {% if not item.sand_edge and not item.sand_cross_grain %}None{% endif %}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.quantity }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ item.price_per_unit|floatformat:2 }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ item.total_price|floatformat:2 }}</td>

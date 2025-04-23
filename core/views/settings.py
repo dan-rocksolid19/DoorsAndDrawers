@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.exceptions import ValidationError
-from decimal import Decimal
-from ..models import Style, PanelType, Design, WoodStock, EdgeProfile, PanelRise, RailDefaults
+from decimal import Decimal, InvalidOperation
+from ..models import Style, PanelType, Design, WoodStock, EdgeProfile, PanelRise, RailDefaults, MiscellaneousDoorSettings
 from django.template.loader import render_to_string
 from django.http import HttpResponse, HttpResponseBadRequest
 
@@ -16,6 +16,7 @@ def door_settings(request):
     panel_rises = PanelRise.objects.all()
     panel_types = PanelType.objects.all()
     rail_defaults = RailDefaults.objects.first()  # Get the first (should be only one) rail defaults
+    misc_settings = MiscellaneousDoorSettings.objects.first()  # Get the first (should be only one) misc settings
     
     context = {
         'styles': styles,
@@ -25,6 +26,7 @@ def door_settings(request):
         'panel_rises': panel_rises,
         'panel_types': panel_types,
         'rail_defaults': rail_defaults,
+        'misc_settings': misc_settings,
         'title': 'Door Settings'
     }
     
@@ -1368,4 +1370,99 @@ def update_drawer_defaults(request):
         
         return render(request, 'settings/partials/drawer_defaults_row_display.html', {'defaults': defaults})
     
-    return HttpResponseBadRequest("Invalid request method") 
+    return HttpResponseBadRequest("Invalid request method")
+
+def edit_misc_settings(request):
+    """
+    Switch miscellaneous door settings row to edit mode
+    """
+    settings = MiscellaneousDoorSettings.objects.first()
+    panel_types = PanelType.objects.all()
+    
+    if not settings:
+        # Create default values if they don't exist
+        settings = MiscellaneousDoorSettings.objects.create(
+            extra_height=Decimal('0.125'),
+            extra_width=Decimal('0.125'),
+            glue_min_width=Decimal('8.000'),
+            rail_extra=Decimal('0.125'),
+            drawer_front=PanelType.objects.first(),
+            drawer_slab=PanelType.objects.first()
+        )
+    
+    context = {
+        'settings': settings,
+        'panel_types': panel_types,
+    }
+    
+    return render(request, 'settings/partials/misc_settings_row_edit.html', context)
+
+def get_misc_settings(request):
+    """
+    Return miscellaneous door settings row in display mode
+    """
+    settings = MiscellaneousDoorSettings.objects.first()
+    
+    if not settings:
+        # Create default values if they don't exist
+        settings = MiscellaneousDoorSettings.objects.create(
+            extra_height=Decimal('0.125'),
+            extra_width=Decimal('0.125'),
+            glue_min_width=Decimal('8.000'),
+            rail_extra=Decimal('0.125'),
+            drawer_front=PanelType.objects.first(),
+            drawer_slab=PanelType.objects.first()
+        )
+    
+    return render(request, 'settings/partials/misc_settings_row_display.html', {'settings': settings})
+
+def update_misc_settings(request):
+    """
+    Process the form submission and update the miscellaneous door settings
+    """
+    settings = MiscellaneousDoorSettings.objects.first()
+    panel_types = PanelType.objects.all()
+    
+    if not settings:
+        settings = MiscellaneousDoorSettings.objects.create(
+            extra_height=Decimal('0.125'),
+            extra_width=Decimal('0.125'),
+            glue_min_width=Decimal('8.000'),
+            rail_extra=Decimal('0.125'),
+            drawer_front=PanelType.objects.first(),
+            drawer_slab=PanelType.objects.first()
+        )
+    
+    if request.method == 'POST':
+        try:
+            # Update decimal fields
+            settings.extra_height = Decimal(request.POST.get('extra_height', '0.125'))
+            settings.extra_width = Decimal(request.POST.get('extra_width', '0.125'))
+            settings.glue_min_width = Decimal(request.POST.get('glue_min_width', '8.000'))
+            settings.rail_extra = Decimal(request.POST.get('rail_extra', '0.125'))
+            
+            # Update foreign key fields
+            settings.drawer_front_id = request.POST.get('drawer_front')
+            settings.drawer_slab_id = request.POST.get('drawer_slab')
+            
+            settings.full_clean()  # Validate the model
+            settings.save()
+        except (ValidationError, InvalidOperation) as e:
+            # Return the edit form with error messages
+            if isinstance(e, ValidationError):
+                errors = e.message_dict
+            else:
+                errors = {'extra_height': ['Invalid decimal value']}
+                
+            context = {
+                'settings': settings,
+                'panel_types': panel_types,
+                'errors': errors
+            }
+            return render(request, 'settings/partials/misc_settings_row_edit.html', context, status=422)
+        
+        # Return the updated row in display mode
+        return render(request, 'settings/partials/misc_settings_row_display.html', {'settings': settings})
+    
+    # If not POST request, redirect to door settings
+    return redirect('door_settings') 

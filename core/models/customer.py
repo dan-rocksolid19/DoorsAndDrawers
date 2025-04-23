@@ -16,6 +16,11 @@ class Customer(BaseModel):
         max_length=255,
         verbose_name="Last Name"
     )
+    taxable = models.BooleanField(
+        default=False,
+        verbose_name="Taxable",
+        help_text="Whether this customer should be charged tax on orders"
+    )
     address_line1 = models.CharField(
         max_length=255,
         verbose_name="Address Line 1"
@@ -105,24 +110,52 @@ class Customer(BaseModel):
         """
         Get door defaults for this customer.
         Returns only customer-specific defaults from the JSON field.
-        Does not include global defaults - these should be applied by the view/service
-        that uses these values.
+        Filters out rail dimensions that match the global defaults.
         """
-        # Simply return the customer defaults as is - no filtering or additions
-        return self.door_defaults.copy() if self.door_defaults else {}
+        if not self.door_defaults:
+            return {}
+            
+        # Get a copy of the defaults
+        defaults = self.door_defaults.copy()
+        
+        # Get global rail defaults to filter out matching values
+        from .door import RailDefaults
+        global_rail_defaults = RailDefaults.objects.first()
+        
+        if global_rail_defaults:
+            # Check each rail dimension and remove it if it matches the global default
+            rail_fields = {
+                'rail_top': 'top',
+                'rail_bottom': 'bottom',
+                'rail_left': 'left',
+                'rail_right': 'right',
+                'interior_rail_size': 'interior_rail_size'
+            }
+            
+            for customer_field, global_field in rail_fields.items():
+                if customer_field in defaults:
+                    try:
+                        # Compare the customer value with the global default
+                        from decimal import Decimal
+                        customer_value = Decimal(str(defaults[customer_field]))
+                        global_value = getattr(global_rail_defaults, global_field)
+                        
+                        # If they match, remove the customer-specific override
+                        if customer_value == global_value:
+                            defaults.pop(customer_field)
+                    except (ValueError, TypeError, AttributeError):
+                        # Keep the value if there's any error in comparison
+                        pass
+                        
+        return defaults
     
     def get_drawer_defaults(self):
         """
         Get drawer defaults for this customer.
-        Returns customer-specific defaults from the JSON field if present,
-        otherwise returns global defaults.
+        Returns only customer-specific defaults from the JSON field.
         """
-        if self.drawer_defaults:
-            return self.drawer_defaults
-        else:
-            # No need to fallback as the drawer global settings are used by the view
-            # and not directly comparable to our JSON structure
-            return {}
+        # Simply return the drawer defaults as is
+        return self.drawer_defaults.copy() if self.drawer_defaults else {}
             
     def set_door_defaults(self, **kwargs):
         """
@@ -152,10 +185,17 @@ class Customer(BaseModel):
         """
         Set drawer defaults for this customer.
         Accepts keyword arguments for drawer properties.
+        If a value is None, it will remove that key from drawer_defaults.
         """
         # Convert model instances to IDs for JSON serialization
-        for key, value in kwargs.items():
-            if hasattr(value, 'pk'):
+        for key, value in list(kwargs.items()):
+            if value is None:
+                # Remove this key from drawer_defaults
+                if key in self.drawer_defaults:
+                    self.drawer_defaults.pop(key)
+                # Remove from kwargs to avoid storing None values
+                kwargs.pop(key)
+            elif hasattr(value, 'pk'):
                 kwargs[key] = value.pk
                 
         # Update the drawer_defaults field

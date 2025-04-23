@@ -79,7 +79,7 @@
                         {% if item.undermount %}Undermount<br>{% endif %}
                         {% if item.finishing %}Finishing{% endif %}
                     {% elif item.type == 'door' %}
-                        Rails: {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}
+                        Rails: {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }} × {{ item.interior_rail_size }}
                     {% else %}
                         Miscellaneous
                     {% endif %}

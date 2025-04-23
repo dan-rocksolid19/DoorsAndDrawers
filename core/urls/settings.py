@@ -22,7 +22,8 @@ from ..views.settings import (
     show_drawer_edgetype_add, cancel_drawer_edgetype_add, add_drawer_edgetype,
     show_drawer_bottom_add, cancel_drawer_bottom_add, add_drawer_bottom,
     show_drawer_pricing_add, cancel_drawer_pricing_add, add_drawer_pricing,
-    edit_drawer_defaults, get_drawer_defaults, update_drawer_defaults
+    edit_drawer_defaults, get_drawer_defaults, update_drawer_defaults,
+    edit_misc_settings, get_misc_settings, update_misc_settings
 )
 
 urlpatterns = [
@@ -118,4 +119,9 @@ urlpatterns = [
     path('drawers/defaults/edit/', edit_drawer_defaults, name='edit_drawer_defaults'),
     path('drawers/defaults/', get_drawer_defaults, name='get_drawer_defaults'),
     path('drawers/defaults/update/', update_drawer_defaults, name='update_drawer_defaults'),
+    
+    # Miscellaneous Door Settings URLs
+    path('doors/misc-settings/edit/', edit_misc_settings, name='edit_misc_settings'),
+    path('doors/misc-settings/', get_misc_settings, name='get_misc_settings'),
+    path('doors/misc-settings/update/', update_misc_settings, name='update_misc_settings'),
 ] 

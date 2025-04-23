@@ -3,9 +3,9 @@ Common view functions for order and quote listings and search functionality.
 """
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import JsonResponse
 from decimal import Decimal, InvalidOperation
-from django_htmx.http import retarget, reswap
+from django_htmx.http import retarget
+from ..models import Customer
 
 
 def paginate_queryset(queryset, page, per_page=10):
@@ -183,8 +183,8 @@ def render_form_with_errors(request, form, item_type, error_message=None):
         form.add_error(None, error_message)
         
     template_name = f"{item_type}/{item_type}_form.html"
-    response = render(request, template_name, {'form': form}, status=422)  # Return 422 Unprocessable Entity for validation errors
-    return retarget(reswap(response, "outerHTML"), "#door-form-container")
+    response = render(request, template_name, {'form': form})
+    return retarget(response, "#door-form-container")
 
 
 def process_line_item_form(request, form_class, model_class, item_type, transform_data_func=None):
@@ -263,7 +263,7 @@ def process_line_item_form(request, form_class, model_class, item_type, transfor
         try:
             if transform_data_func:
                 # Use custom transformation function if provided
-                session_item = transform_data_func(cleaned_data, item_model, item_type, custom_price, price)
+                session_item = transform_data_func(request, cleaned_data, item_model, item_type, custom_price, price)
             else:
                 # Default transformation (will need customization per item type)
                 session_item = {
@@ -297,3 +297,18 @@ def process_line_item_form(request, form_class, model_class, item_type, transfor
         # Handle unexpected errors
         form = form_class(request.POST)
         return render_form_with_errors(request, form, item_type, str(e))
+
+
+def get_current_customer(request):
+    """
+    Get the current customer from the session.
+    Returns None if no customer is set.
+    """
+    customer_id = request.session.get('customer_id')
+    if customer_id:
+        try:
+            return Customer.objects.get(id=customer_id)
+        except Customer.DoesNotExist:
+            # Clear invalid customer ID from session
+            del request.session['customer_id']
+    return None

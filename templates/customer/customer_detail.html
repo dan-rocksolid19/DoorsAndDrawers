@@ -53,6 +53,17 @@
                 <p class="mt-1 text-sm text-gray-900">{{ customer.fax|format_phone }}</p>
             </div>
 
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Tax Status</h3>
+                <p class="mt-1 text-sm {% if customer.taxable %}text-green-600{% else %}text-red-600{% endif %}">
+                    {% if customer.taxable %}
+                        Taxable
+                    {% else %}
+                        Non-Taxable
+                    {% endif %}
+                </p>
+            </div>
+
             {% if customer.notes %}
             <div class="col-span-1 md:col-span-2">
                 <h3 class="text-sm font-medium text-gray-500">Notes</h3>

@@ -67,6 +67,7 @@
                                 <div>Bottom: {{ global_rail_defaults.bottom }}</div>
                                 <div>Left: {{ global_rail_defaults.left }}</div>
                                 <div>Right: {{ global_rail_defaults.right }}</div>
+                                <div>Interior: {{ global_rail_defaults.interior_rail_size }}</div>
                             </div>
                         </div>
                         {% endif %}
@@ -102,6 +103,43 @@
                                     {{ door_form.rail_right.label }}
                                 </label>
                                 {% render_field door_form.rail_right class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder=global_rail_defaults.right %}
+                            </div>
+                            
+                            <!-- Interior Rail -->
+                            <div>
+                                <label for="{{ door_form.interior_rail_size.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    {{ door_form.interior_rail_size.label }}
+                                </label>
+                                {% render_field door_form.interior_rail_size class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder=global_rail_defaults.interior_rail_size %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sanding Options Section -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Sanding Options</h3>
+                        
+                        <!-- Sand Edge -->
+                        <div class="flex items-start mt-3">
+                            <div class="flex items-center h-5">
+                                {% render_field door_form.sand_edge class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" %}
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ door_form.sand_edge.id_for_label }}" class="font-medium text-gray-700">
+                                    {{ door_form.sand_edge.label }}
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Sand Cross Grain -->
+                        <div class="flex items-start mt-3">
+                            <div class="flex items-center h-5">
+                                {% render_field door_form.sand_cross_grain class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" %}
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ door_form.sand_cross_grain.id_for_label }}" class="font-medium text-gray-700">
+                                    {{ door_form.sand_cross_grain.label }}
+                                </label>
                             </div>
                         </div>
                     </div>

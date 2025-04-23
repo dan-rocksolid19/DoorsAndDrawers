@@ -4,7 +4,7 @@ from ..forms import CustomerForm, CustomerDoorDefaultsForm, CustomerDrawerDefaul
 from ..models import Customer
 from django.db import models
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from decimal import Decimal, InvalidOperation
+from ..services.door_defaults_service import DoorDefaultsService
 
 def customers(request):
     customer_list = Customer.objects.all().order_by('-id')
@@ -118,140 +118,53 @@ def customer_search(request):
 
 def customer_defaults(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
-    
-    # Get current door defaults
-    door_defaults = customer.get_door_defaults()
-    
-    # Get current drawer defaults
-    drawer_defaults = customer.get_drawer_defaults()
-    
-    # Get global rail defaults for comparison
-    from ..models.door import RailDefaults
-    global_rail_defaults = RailDefaults.objects.first()
+    door_defaults_service = DoorDefaultsService()
     
     if request.method == 'POST':
         if 'door_form' in request.POST:
             door_form = CustomerDoorDefaultsForm(request.POST)
-            drawer_form = CustomerDrawerDefaultsForm(initial=drawer_defaults)
+            drawer_form = CustomerDrawerDefaultsForm(initial=customer.get_drawer_defaults())
             
             if door_form.is_valid():
-                # Extract non-empty values that are explicitly overridden
-                door_data = {}
+                # Use service to prepare data for storage
+                door_data = door_defaults_service.prepare_defaults_for_storage(door_form.cleaned_data)
                 
-                # For model choices, only include if selected and not None
-                for field in ['wood_stock', 'edge_profile', 'panel_rise', 'style']:
-                    if door_form.cleaned_data[field] is not None:
-                        door_data[field] = door_form.cleaned_data[field]
+                # Update customer's door_defaults
+                customer.door_defaults = door_data
+                customer.save(update_fields=['door_defaults'])
                 
-                # For rail dimensions, only include if they differ from global defaults
-                if global_rail_defaults:
-                    if door_form.cleaned_data['rail_top'] is not None and door_form.cleaned_data['rail_top'] != global_rail_defaults.top:
-                        door_data['rail_top'] = str(door_form.cleaned_data['rail_top'])
-                    if door_form.cleaned_data['rail_bottom'] is not None and door_form.cleaned_data['rail_bottom'] != global_rail_defaults.bottom:
-                        door_data['rail_bottom'] = str(door_form.cleaned_data['rail_bottom'])
-                    if door_form.cleaned_data['rail_left'] is not None and door_form.cleaned_data['rail_left'] != global_rail_defaults.left:
-                        door_data['rail_left'] = str(door_form.cleaned_data['rail_left'])
-                    if door_form.cleaned_data['rail_right'] is not None and door_form.cleaned_data['rail_right'] != global_rail_defaults.right:
-                        door_data['rail_right'] = str(door_form.cleaned_data['rail_right'])
-                
-                # Handle removal of existing overrides if values now match global defaults
-                existing_keys = set(door_defaults.keys())
-                for field in ['rail_top', 'rail_bottom', 'rail_left', 'rail_right']:
-                    # If field was in door_defaults but not in door_data, it means
-                    # the user changed it to match the global default - we need to explicitly remove it
-                    if field in existing_keys and field not in door_data:
-                        # Set to None to signal removal
-                        door_data[field] = None
-                
-                # Save door defaults
-                customer.set_door_defaults(**door_data)
                 messages.success(request, "Door defaults updated successfully")
                 return redirect('customer_defaults', customer_id=customer.id)
         else:
-            door_form = CustomerDoorDefaultsForm(initial=door_defaults)
+            door_form = CustomerDoorDefaultsForm(initial=door_defaults_service.apply_defaults_to_form(customer))
             drawer_form = CustomerDrawerDefaultsForm(request.POST)
             
             if drawer_form.is_valid():
-                # Extract non-empty values
-                drawer_data = {k: v for k, v in drawer_form.cleaned_data.items() if v is not None}
+                # Convert model instances to IDs for JSON serialization
+                drawer_data = {}
+                for key, value in drawer_form.cleaned_data.items():
+                    if value is not None:
+                        if hasattr(value, 'pk'):  # If it's a model instance
+                            drawer_data[key] = value.pk
+                        else:  # For boolean fields and other primitives
+                            drawer_data[key] = value
                 
-                # Save drawer defaults
-                customer.set_drawer_defaults(**drawer_data)
+                # Update customer's drawer_defaults
+                customer.drawer_defaults = drawer_data
+                customer.save(update_fields=['drawer_defaults'])
                 messages.success(request, "Drawer defaults updated successfully")
                 return redirect('customer_defaults', customer_id=customer.id)
     else:
         # For GET request, initialize the forms
-        door_initial = {}
-        drawer_initial = {}
-        
-        # Process door defaults - convert stored IDs to objects
-        for key, value in door_defaults.items():
-            # Try to convert string IDs to model objects
-            if key == 'wood_stock' and value:
-                from ..models.door import WoodStock
-                try:
-                    door_initial[key] = WoodStock.objects.get(pk=value)
-                except (WoodStock.DoesNotExist, ValueError, TypeError):
-                    pass
-            elif key == 'edge_profile' and value:
-                from ..models.door import EdgeProfile
-                try:
-                    door_initial[key] = EdgeProfile.objects.get(pk=value)
-                except (EdgeProfile.DoesNotExist, ValueError, TypeError):
-                    pass
-            elif key == 'panel_rise' and value:
-                from ..models.door import PanelRise
-                try:
-                    door_initial[key] = PanelRise.objects.get(pk=value)
-                except (PanelRise.DoesNotExist, ValueError, TypeError):
-                    pass
-            elif key == 'style' and value:
-                from ..models.door import Style
-                try:
-                    door_initial[key] = Style.objects.get(pk=value)
-                except (Style.DoesNotExist, ValueError, TypeError):
-                    pass
-            # Try to convert rail dimensions to Decimal
-            elif key.startswith('rail_') and value:
-                try:
-                    door_initial[key] = Decimal(value)
-                except (InvalidOperation, TypeError):
-                    pass
-
-        # Process drawer defaults
-        for key, value in drawer_defaults.items():
-            # Try to convert string IDs to model objects
-            if key == 'wood_stock' and value:
-                from ..models.drawer import DrawerWoodStock
-                try:
-                    drawer_initial[key] = DrawerWoodStock.objects.get(pk=value)
-                except (DrawerWoodStock.DoesNotExist, ValueError, TypeError):
-                    pass
-            elif key == 'edge_type' and value:
-                from ..models.drawer import DrawerEdgeType
-                try:
-                    drawer_initial[key] = DrawerEdgeType.objects.get(pk=value)
-                except (DrawerEdgeType.DoesNotExist, ValueError, TypeError):
-                    pass
-            elif key == 'bottom' and value:
-                from ..models.drawer import DrawerBottomSize
-                try:
-                    drawer_initial[key] = DrawerBottomSize.objects.get(pk=value)
-                except (DrawerBottomSize.DoesNotExist, ValueError, TypeError):
-                    pass
-            # Boolean fields can be used directly
-            elif key in ['undermount', 'finishing']:
-                drawer_initial[key] = value
-        
-        door_form = CustomerDoorDefaultsForm(initial=door_initial)
-        drawer_form = CustomerDrawerDefaultsForm(initial=drawer_initial)
+        door_form = CustomerDoorDefaultsForm(initial=door_defaults_service.apply_defaults_to_form(customer))
+        drawer_form = CustomerDrawerDefaultsForm(initial=customer.get_drawer_defaults())
     
     context = {
         'customer': customer,
         'door_form': door_form,
         'drawer_form': drawer_form,
         'title': f'Defaults for {customer.company_name.title()}',
-        'global_rail_defaults': global_rail_defaults
+        'global_rail_defaults': door_defaults_service.global_defaults
     }
     
     return render(request, 'customer/customer_defaults.html', context) 

@@ -114,7 +114,10 @@
                             Dimensions
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Rails (T×B×L×R)
+                            Rails (T×B×L×R×I)
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Sanding
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Quantity
@@ -146,7 +149,12 @@
                             {{ item.width }} × {{ item.height }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }}
+                            {{ item.rail_top }} × {{ item.rail_bottom }} × {{ item.rail_left }} × {{ item.rail_right }} × {{ item.interior_rail_size }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {% if item.sand_edge %}Edge, {% endif %}
+                            {% if item.sand_cross_grain %}Cross Grain{% endif %}
+                            {% if not item.sand_edge and not item.sand_cross_grain %}None{% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ item.quantity }}

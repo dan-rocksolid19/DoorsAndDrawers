@@ -127,6 +127,23 @@ class DoorLineItem(LineItem):
         help_text="Right rail size in inches",
         default=Decimal('1.000')
     )
+    interior_rail_size = models.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
+        help_text="Interior rail size in inches",
+        default=Decimal('1.000')
+    )
+
+    # Sanding options
+    sand_edge = models.BooleanField(
+        default=False,
+        help_text="Whether to sand the edges of the door"
+    )
+    sand_cross_grain = models.BooleanField(
+        default=False,
+        help_text="Whether to sand across the grain"
+    )
     
     class Meta:
         verbose_name = "Door Item"
@@ -187,10 +204,63 @@ class RailDefaults(BaseModel):
         validators=[MinValueValidator(Decimal('0.001'))],
         help_text="Default right rail size in inches"
     )
+    interior_rail_size = models.DecimalField(
+        max_digits=5, 
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
+        help_text="Default interior rail size in inches"
+    )
     
     class Meta:
         verbose_name = "Rail Defaults"
         verbose_name_plural = "Rail Defaults"
     
     def __str__(self):
-        return f"Rail Defaults: T:{self.top}, B:{self.bottom}, L:{self.left}, R:{self.right}"
+        return f"Rail Defaults: T:{self.top}, B:{self.bottom}, L:{self.left}, R:{self.right}, I:{self.interior_rail_size}"
+
+
+class MiscellaneousDoorSettings(BaseModel):
+    """Model for miscellaneous door settings and defaults."""
+    extra_height = models.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
+        help_text="Extra height to add when gluing sheet"
+    )
+    extra_width = models.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
+        help_text="Extra width to add when gluing sheet"
+    )
+    glue_min_width = models.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
+        help_text="Minimum width for gluing sheet"
+    )
+    rail_extra = models.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.001'))],
+        help_text="Rail joint extra"
+    )
+    drawer_front = models.ForeignKey(
+        PanelType,
+        on_delete=models.PROTECT,
+        related_name='drawer_front_settings',
+        help_text="Panel type to use for drawer fronts"
+    )
+    drawer_slab = models.ForeignKey(
+        PanelType,
+        on_delete=models.PROTECT,
+        related_name='drawer_slab_settings',
+        help_text="Panel type to use for drawer slabs"
+    )
+
+    class Meta:
+        verbose_name = "Miscellaneous Door Settings"
+        verbose_name_plural = "Miscellaneous Door Settings"
+
+    def __str__(self):
+        return f"Door Settings (Extra H:{self.extra_height}, W:{self.extra_width})"

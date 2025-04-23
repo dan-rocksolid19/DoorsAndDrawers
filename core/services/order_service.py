@@ -4,9 +4,10 @@ Service for handling order and quote operations.
 from decimal import Decimal
 from django.db import transaction, DatabaseError, IntegrityError
 from ..models import Order
-from ..models.door import DoorLineItem, RailDefaults
+from ..models.door import DoorLineItem
 from ..models.drawer import DrawerLineItem
 from ..models.line_item import GenericLineItem
+from .door_defaults_service import DoorDefaultsService
 
 
 class OrderService:
@@ -14,6 +15,9 @@ class OrderService:
     Service class that handles operations related to orders and quotes.
     Encapsulates the business logic for creating, updating, and processing orders.
     """
+
+    def __init__(self):
+        self.door_defaults_service = DoorDefaultsService()
 
     @staticmethod
     def create_from_session(form_data, session_data, is_quote=False):
@@ -161,10 +165,19 @@ class OrderService:
         # Only use the stored price_per_unit if custom_price is True
         price_per_unit = Decimal(item_data['price_per_unit']) if custom_price else Decimal('0.00')
         
-        # Use rail values from session if available, otherwise use defaults
-        rail_defaults = None
-        if not item_data.get('rail_top'):
-            rail_defaults = RailDefaults.objects.first()
+        # Get rail values from session if available, otherwise use defaults
+        door_defaults_service = DoorDefaultsService()
+        
+        # Get customer-specific interior rail size or global default
+        interior_rail_size = door_defaults_service.get_rail_size(
+            order.customer, 
+            'interior_rail_size'
+        ) if order.customer else door_defaults_service.global_defaults['interior_rail_size']
+        
+        # Get customer defaults for sanding options
+        customer_defaults = door_defaults_service.get_defaults(order.customer) if order.customer else {}
+        sand_edge = customer_defaults.get('sand_edge', False)
+        sand_cross_grain = customer_defaults.get('sand_cross_grain', False)
         
         # Create door line item
         door_item = DoorLineItem(
@@ -177,12 +190,14 @@ class OrderService:
             height=height,
             quantity=quantity,
             price_per_unit=price_per_unit,
-            # Use provided rail dimensions or defaults
-            rail_top=Decimal(item_data.get('rail_top', rail_defaults.top if rail_defaults else Decimal('2.500'))),
-            rail_bottom=Decimal(item_data.get('rail_bottom', rail_defaults.bottom if rail_defaults else Decimal('2.500'))),
-            rail_left=Decimal(item_data.get('rail_left', rail_defaults.left if rail_defaults else Decimal('2.500'))),
-            rail_right=Decimal(item_data.get('rail_right', rail_defaults.right if rail_defaults else Decimal('2.500'))),
-            custom_price=custom_price
+            rail_top=Decimal(item_data.get('rail_top', door_defaults_service.global_defaults['rail_top'])),
+            rail_bottom=Decimal(item_data.get('rail_bottom', door_defaults_service.global_defaults['rail_bottom'])),
+            rail_left=Decimal(item_data.get('rail_left', door_defaults_service.global_defaults['rail_left'])),
+            rail_right=Decimal(item_data.get('rail_right', door_defaults_service.global_defaults['rail_right'])),
+            interior_rail_size=interior_rail_size,
+            custom_price=custom_price,
+            sand_edge=sand_edge,
+            sand_cross_grain=sand_cross_grain
         )
         door_item.save()
         return door_item
