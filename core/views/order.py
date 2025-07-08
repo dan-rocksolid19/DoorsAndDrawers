@@ -6,7 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from ..models.customer import Customer
 from ..models.door import DoorLineItem
 from django.template.loader import render_to_string
-from weasyprint import HTML
+from ..utils import render_pdf
 from itertools import chain
 from ..services.order_service import OrderService
 from .common import handle_entity_search, handle_entity_list
@@ -297,7 +297,6 @@ def generate_order_pdf(request, order_id):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="order_{order.order_number}.pdf"'
     
-    # Generate PDF
-    HTML(string=html_string).write_pdf(response)
-    
-    return response 
+    # Generate PDF    response.write(render_pdf(html_string))
+
+    return response

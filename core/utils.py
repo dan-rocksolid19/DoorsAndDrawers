@@ -2,6 +2,7 @@ import csv
 from django.conf import settings
 from functools import lru_cache
 from pathlib import Path
+import pdfkit
 
 
 @lru_cache(maxsize=None)
@@ -20,5 +21,16 @@ def get_us_states():
             return tuple((row['code'], row['name']) for row in reader)
     except FileNotFoundError:
         # Return an empty tuple if the file is not found
-        # This prevents the application from crashing
-        return tuple() 
+        # This prevents the application from crashing        return tuple()
+
+
+def render_pdf(html_string: str) -> bytes:
+    """Render HTML content into a PDF using wkhtmltopdf via pdfkit.
+
+    Args:
+        html_string: The HTML content to convert.
+
+    Returns:
+        The generated PDF as bytes.
+    """
+    return pdfkit.from_string(html_string, False)
