@@ -6,6 +6,9 @@ Run this script to start the Django application in production mode.
 
 import os
 import sys
+import webbrowser
+import threading
+import time
 from waitress import serve
 
 # Add the project directory to Python path
@@ -22,7 +25,13 @@ if __name__ == '__main__':
     print("Starting DoorsAndDrawers application with Waitress...")
     print("Server will be available at: http://localhost:8080")
     print("Press Ctrl+C to stop the server")
-    
+
+    def open_browser():
+        time.sleep(3)
+        webbrowser.open("http://localhost:8080")
+
+    threading.Thread(target=open_browser, daemon=True).start()
+
     # Serve the application with Waitress
     # You can customize host, port, and other settings as needed
     serve(
