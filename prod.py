@@ -18,10 +18,15 @@ sys.path.insert(0, project_dir)
 # Set Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DoorsAndDrawers.settings')
 
+log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+os.makedirs(log_dir, exist_ok=True)
 # Import Django WSGI application
 from DoorsAndDrawers.wsgi import application
+import os
+
 
 if __name__ == '__main__':
+
     print("Starting DoorsAndDrawers application with Waitress...")
     print("Server will be available at: http://localhost:8080")
     print("Press Ctrl+C to stop the server")
