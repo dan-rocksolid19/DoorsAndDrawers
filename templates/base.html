@@ -1,26 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doors and Drawers</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'card-pink': '#fff1f0',
-                        'card-purple': '#f3f1ff',
-                        'card-mint': '#f0fff4',
-                        'card-peach': '#fff3e0',
-                        'card-blue': '#e3f2fd',
-                    }
-                }
-            }
-        }
-    </script>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-50">
