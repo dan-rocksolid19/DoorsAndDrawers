@@ -1,8 +1,10 @@
 from django.urls import path, include
+from django.views.generic.base import RedirectView
 from ..views import home
 
 urlpatterns = [
-    path('', home, name='home'),
+    path('',RedirectView.as_view(url='home/')),
+    path('home/', home, name='home'),
     path('customers/', include('core.urls.customer')),
     path('orders/', include('core.urls.order')),
     path('quotes/', include('core.urls.quote')),

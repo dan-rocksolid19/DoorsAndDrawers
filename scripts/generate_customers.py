@@ -84,8 +84,3 @@ def generate_customers(n=10, create_defaults=True):
     
     print(f"Successfully generated {len(created_customers)} customers.")
     return created_customers
-
-# Example usage:
-# python manage.py shell
-# from scripts.generate_customers import generate_customers
-# generate_customers(10) 
