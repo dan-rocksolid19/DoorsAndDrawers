@@ -41,7 +41,7 @@ pyinstaller --noconfirm --clean --noconsole ^
   --add-data "db.sqlite3;." ^
   --add-data "staticfiles;staticfiles" ^
   --add-data "templates;templates" ^
-  run_production.py
+  prod.py
 
 if %errorlevel% neq 0 (
     echo ERROR: PyInstaller packaging failed
