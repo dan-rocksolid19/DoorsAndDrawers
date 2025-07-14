@@ -146,4 +146,4 @@ def quote_search(request):
 
 def generate_quote_pdf(request, quote_id):
     """Generate a PDF version of the quote for printing."""
-    pass
+    return HttpResponse("to be implemented!")

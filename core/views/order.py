@@ -269,4 +269,4 @@ def remove_line_item(request, item_id):
 
 def generate_order_pdf(request, order_id):
     """Generate a PDF version of the order for printing."""
-    pass
+    return HttpResponse("to be implemented!")
