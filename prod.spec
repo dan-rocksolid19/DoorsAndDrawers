@@ -6,8 +6,21 @@ a = Analysis(
     ['prod.py'],
     pathex=[],
     binaries=[],
-    datas=[('DoorsAndDrawers', 'DoorsAndDrawers'), ('db.sqlite3', '.'), ('staticfiles', 'staticfiles'), ('templates', 'templates')],
-    hiddenimports=['whitenoise.middleware', 'whitenoise', 'encodings'],
+    datas=[
+        ('DoorsAndDrawers', 'DoorsAndDrawers'),
+        ('core', 'core'),
+        ('db.sqlite3', '.'),
+        ('staticfiles', 'staticfiles'),
+        ('templates', 'templates')
+    ],
+    hiddenimports=[
+        'whitenoise',
+        'whitenoise.middleware',
+        'encodings',
+        'django.contrib.staticfiles.templatetags.staticfiles',
+        'django.contrib.messages.templatetags.messages',
+        'django_htmx.context_processors',
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
