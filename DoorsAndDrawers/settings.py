@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'core.middleware.RequestResponseLoggingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -94,6 +95,10 @@ LOGGING = {
             'format': '{levelname} {message}',
             'style': '{',
         },
+        'http_detailed': {
+            'format': '[{asctime}] {levelname} HTTP {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'file': {
@@ -102,20 +107,36 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs', 'app.log'),
             'formatter': 'verbose',
         },
+        'http_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'app.log'),
+            'formatter': 'http_detailed',
+        },
     },
     'root': {
         'handlers': ['file'],
-        'level': 'WARNING',
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'django.request': {
             'handlers': ['file'],
-            'level': 'ERROR',
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'core.middleware': {
+            'handlers': ['http_file'],
+            'level': 'INFO',
             'propagate': False,
         },
         'DoorsAndDrawers': {

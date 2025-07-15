@@ -36,12 +36,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Step 4: Packaging application with PyInstaller...
-pyinstaller --noconfirm --clean --noconsole ^
-  --add-data "DoorsAndDrawers;DoorsAndDrawers" ^
-  --add-data "db.sqlite3;." ^
-  --add-data "staticfiles;staticfiles" ^
-  --add-data "templates;templates" ^
-  prod.py
+pyinstaller prod.spec
 
 if %errorlevel% neq 0 (
     echo ERROR: PyInstaller packaging failed
