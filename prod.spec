@@ -3,7 +3,7 @@
 block_cipher = None
 
 a = Analysis(
-    ['run_production.py'],
+    ['prod.py'],
     pathex=[],
     binaries=[],
     datas=[('DoorsAndDrawers', 'DoorsAndDrawers'), ('db.sqlite3', '.'), ('staticfiles', 'staticfiles'), ('templates', 'templates')],
