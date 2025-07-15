@@ -11,7 +11,19 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os, sys
+
+def get_base_path():
+    # If running from a PyInstaller bundle
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    # Running from source
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+BASE_PATH = get_base_path()
+LOG_DIR = os.path.join(BASE_PATH, '_internal', 'logs')
+
+os.makedirs(LOG_DIR, exist_ok=True)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -104,7 +116,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'app.log'),
+            'filename': os.path.join(LOG_DIR, 'app.log'),
             'formatter': 'verbose',
         },
         'http_file': {
@@ -116,7 +128,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['file'],
-        'level': 'INFO',
+        'level': 'WARNING',
     },
     'loggers': {
         'django': {
