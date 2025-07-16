@@ -10,7 +10,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-50">
-    {% if request.path != '/' %}
+    {% if request.path != '/home/' %}
     <div class="fixed top-4 left-4">
         <a href="{% url 'home' %}" 
            class="flex items-center px-4 py-2 bg-white text-indigo-600 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 border border-gray-200">
