@@ -74,3 +74,5 @@ logs/
 *.temp
 strategies.md
 backup_migrations/
+/node_modules/
+/myapp.zip

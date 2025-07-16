@@ -6,7 +6,6 @@ from django.http import HttpResponse, JsonResponse
 from ..models.customer import Customer
 from ..models.door import DoorLineItem
 from django.template.loader import render_to_string
-from weasyprint import HTML
 from itertools import chain
 from ..services.order_service import OrderService
 from .common import handle_entity_search, handle_entity_list
@@ -24,20 +23,20 @@ def orders(request):
 
 def order_detail(request, order_id):
     order = get_object_or_404(Order.confirmed, id=order_id)
-    
+
     # Get all door line items related to this order
     door_items = DoorLineItem.objects.filter(order=order).select_related(
         'wood_stock', 'edge_profile', 'panel_rise', 'style'
     )
-    
+
     # Get all drawer line items related to this order
     drawer_items = order.drawer_items.all().select_related(
         'wood_stock', 'edge_type', 'bottom'
     )
-    
+
     # Get all generic line items related to this order
     generic_items = order.generic_items.all()
-    
+
     return render(request, 'order/order_detail.html', {
         'order': order,
         'door_items': door_items,
@@ -53,29 +52,29 @@ def create_order(request):
             # Check if there are items in the order
             session_data = request.session.get('current_order', {})
             items = session_data.get('items', [])
-            
+
             if not items:
                 messages.error(request, "You need to add at least one item to create an order.")
                 return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
-            
+
             # Check if a customer is associated with the order
             if 'customer' not in session_data:
                 messages.error(request, "Please select a customer for this order.")
                 return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
-            
+
             # Use OrderService to create the order
             success, order, error = OrderService.create_from_session(
                 form.cleaned_data,
                 session_data,
                 is_quote=False
             )
-            
+
             if success:
                 # Clear session data
                 if 'current_order' in request.session:
                     del request.session['current_order']
                     request.session.modified = True
-                
+
                 messages.success(request, 'Order created successfully!')
                 return redirect('order_detail', order_id=order.id)
             else:
@@ -86,7 +85,7 @@ def create_order(request):
                     messages.error(request, "There was a database problem. Please try again later.")
                 else:
                     messages.error(request, error)
-                
+
                 return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
         else:
             # Form validation failed, display error messages
@@ -96,7 +95,7 @@ def create_order(request):
                         messages.error(request, error)
                     else:
                         messages.error(request, f"{form[field].label}: {error}")
-            
+
             # Return the form with errors and 422 status code
             return render(request, 'order/order_form.html', {'form': form, 'title': 'Create Order'}, status=422)
     else:
@@ -104,9 +103,9 @@ def create_order(request):
         if 'current_order' in request.session:
             del request.session['current_order']
             request.session.modified = True
-            
+
         form = OrderForm()
-    
+
     return render(request, 'order/order_form.html', {
         'form': form,
         'title': 'Create Order'
@@ -118,7 +117,7 @@ def delete_order(request, order_id):
         order.delete()
         messages.success(request, 'Order deleted successfully!')
         return redirect('orders')
-    
+
     return render(request, 'order/order_confirm_delete.html', {
         'order': order,
         'title': f'Delete Order {order.order_number}'
@@ -138,14 +137,14 @@ def get_customer_details(request):
                 'shipping_value': ''
             }
         })
-    
+
     try:
         customer = Customer.objects.get(id=customer_id)
         defaults = customer.defaults if hasattr(customer, 'defaults') else None
 
         billing_address1 = customer.address_line1 or ''
         billing_address2 = customer.address_line2 or ''
-        
+
         response_data = {
             'addresses': {
                 'address1': billing_address1,
@@ -160,12 +159,12 @@ def get_customer_details(request):
                 'shipping_value': str(defaults.shipping_value) if defaults else ''
             }
         }
-        
+
         # Preserve existing items when changing customers
         existing_items = []
         if 'current_order' in request.session and 'items' in request.session['current_order']:
             existing_items = request.session['current_order']['items']
-            
+
         # Update order in session with new customer data but keep existing items
         request.session['current_order'] = {
             'customer': customer_id,
@@ -225,34 +224,34 @@ def remove_line_item(request, item_id):
                     return HttpResponse("Item not found in session", status=404)
             except (ValueError, IndexError):
                 return HttpResponse("Invalid item index", status=400)
-        
+
         # If not using session, handle database-persisted items
         order_id = request.session.get('order_id')
         if not order_id:
             return HttpResponse("No active order", status=400)
-        
+
         order = get_object_or_404(Order, id=order_id)
-        
+
         # Find and remove the line item
         item_removed = False
-        
+
         # Try to find and remove from door items
         if hasattr(order, 'door_items'):
             door_item = order.door_items.filter(id=item_id).first()
             if door_item:
                 door_item.delete()
                 item_removed = True
-        
+
         # If not found in door items, try drawer items
         if not item_removed and hasattr(order, 'drawer_items'):
             drawer_item = order.drawer_items.filter(id=item_id).first()
             if drawer_item:
                 drawer_item.delete()
                 item_removed = True
-        
+
         if not item_removed:
             return HttpResponse("Item not found", status=404)
-        
+
         # Get all remaining items to refresh the list
         # Use the line_items property if it exists, otherwise combine manually
         if hasattr(order, 'line_items') and callable(getattr(order, 'line_items')):
@@ -261,43 +260,13 @@ def remove_line_item(request, item_id):
             door_items = list(order.door_items.all()) if hasattr(order, 'door_items') else []
             drawer_items = list(order.drawer_items.all()) if hasattr(order, 'drawer_items') else []
             items = list(chain(door_items, drawer_items))
-        
+
         # Return the updated line items table
         return render(request, 'door/line_items_table.html', {'items': items})
-    
+
     # If not DELETE request, redirect to order detail
     return redirect('order_detail')
 
 def generate_order_pdf(request, order_id):
     """Generate a PDF version of the order for printing."""
-    order = get_object_or_404(Order.objects.filter(is_quote=False), id=order_id)
-    
-    # Get all door line items related to this order
-    door_items = DoorLineItem.objects.filter(order=order).select_related(
-        'wood_stock', 'edge_profile', 'panel_rise', 'style'
-    )
-    
-    # Get all drawer line items related to this order
-    drawer_items = order.drawer_items.all().select_related(
-        'wood_stock', 'edge_type', 'bottom'
-    )
-    
-    # Get all generic line items related to this order
-    generic_items = order.generic_items.all()
-    
-    # Render the HTML template
-    html_string = render_to_string('pdf/order_pdf.html', {
-        'order': order,
-        'door_items': door_items,
-        'drawer_items': drawer_items,
-        'generic_items': generic_items
-    })
-    
-    # Create a PDF file
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="order_{order.order_number}.pdf"'
-    
-    # Generate PDF
-    HTML(string=html_string).write_pdf(response)
-    
-    return response 
+    return HttpResponse("to be implemented!")

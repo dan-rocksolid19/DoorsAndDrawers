@@ -1,12 +1,16 @@
 from faker import Faker
 import random
 import os
+import sys
 import django
 from decimal import Decimal
 from django.db import transaction
 
+# Add the project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # Setup Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'doors_and_drawers.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DoorsAndDrawers.settings')
 django.setup()
 
 # Now import the models
@@ -18,28 +22,28 @@ fake = Faker()
 def generate_customers(n=10, create_defaults=True):
     """
     Generate n fake customers and optionally create defaults for each.
-    
+
     Args:
         n (int): Number of customers to generate
         create_defaults (bool): Whether to create customer defaults
-        
+
     Returns:
         list: List of created Customer instances
     """
     print(f"Generating {n} fake customers...")
-    
+
     # Get state choices for random selection
     state_choices = get_us_states()
     state_codes = [code for code, name in state_choices]
-    
+
     created_customers = []
-    
+
     with transaction.atomic():
         for i in range(n):
             # Generate a random company name
             company_type = random.choice(['Woodworks', 'Cabinets', 'Furniture', 'Interiors', 'Carpentry', 'Designs', 'Home', 'Kitchen', 'Custom'])
             company_name = f"{fake.last_name()} {company_type}"
-            
+
             # Create the customer
             customer = Customer(
                 company_name=company_name,
@@ -56,20 +60,20 @@ def generate_customers(n=10, create_defaults=True):
             )
             customer.save()
             created_customers.append(customer)
-            
+
             print(f"Created customer: {customer}")
-            
+
             # Create customer defaults if requested
             if create_defaults:
                 discount_type = random.choice(['PERCENT', 'FIXED'])
                 discount_value = Decimal(str(random.randint(0, 15))) if discount_type == 'PERCENT' else Decimal(str(random.randint(0, 200)))
-                
+
                 surcharge_type = random.choice(['PERCENT', 'FIXED'])
                 surcharge_value = Decimal(str(random.randint(0, 10))) if surcharge_type == 'PERCENT' else Decimal(str(random.randint(0, 100)))
-                
+
                 shipping_type = random.choice(['PERCENT', 'FIXED'])
                 shipping_value = Decimal(str(random.randint(0, 15))) if shipping_type == 'PERCENT' else Decimal(str(random.randint(0, 100)))
-                
+
                 defaults = CustomerDefaults(
                     customer=customer,
                     discount_type=discount_type,
@@ -81,11 +85,11 @@ def generate_customers(n=10, create_defaults=True):
                 )
                 defaults.save()
                 print(f"Created defaults for: {customer}")
-    
+
     print(f"Successfully generated {len(created_customers)} customers.")
     return created_customers
 
-# Example usage:
-# python manage.py shell
-# from scripts.generate_customers import generate_customers
-# generate_customers(10) 
+
+if __name__ == '__main__':
+    # Generate 10 customers by default when script is run directly
+    generate_customers(10)
