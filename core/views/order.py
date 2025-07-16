@@ -308,7 +308,7 @@ def generate_order_pdf(request, order_id):
     if not pdf.err:
         # Create HTTP response with PDF content
         response = HttpResponse(result.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="order_{order.order_number}.pdf"'
+        response['Content-Disposition'] = f'inline; filename="order_{order.order_number}.pdf"'
         return response
     else:
         # Return error response if PDF generation failed
