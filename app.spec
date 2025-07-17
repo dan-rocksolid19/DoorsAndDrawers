@@ -41,7 +41,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='run_production',
+    name='test',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
