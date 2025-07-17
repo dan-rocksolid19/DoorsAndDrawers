@@ -77,3 +77,4 @@ backup_migrations/
 /node_modules/
 /myapp.zip
 /myapp_test.zip
+/myapp_prod.zip
