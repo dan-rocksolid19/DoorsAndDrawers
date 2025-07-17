@@ -3,7 +3,7 @@
 block_cipher = None
 
 a = Analysis(
-    ['prod.py'],
+    ['app.py'],
     pathex=[],
     binaries=[],
     datas=[
@@ -60,5 +60,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='run_production',
+    name='test',
 )
