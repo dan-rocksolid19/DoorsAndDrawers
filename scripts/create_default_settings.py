@@ -14,12 +14,19 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DoorsAndDrawers.settings')
 django.setup()
 
 # Import after Django setup
-from core.models.drawer import DefaultDrawerSettings
+from core.models.drawer import (
+    DefaultDrawerSettings, DrawerWoodStock, DrawerEdgeType, 
+    DrawerBottomSize, DrawerPricing
+)
 from core.models.door import (
     RailDefaults, MiscellaneousDoorSettings, PanelType,
     WoodStock, Design, EdgeProfile, PanelRise, Style
 )
 
+
+# ============================================================================
+# DRAWER SETTINGS FUNCTIONS
+# ============================================================================
 
 def create_drawer_defaults():
     """Create default settings for drawers if they don't exist."""
@@ -42,6 +49,98 @@ def create_drawer_defaults():
     print(f"Created drawer default settings: {drawer_defaults}")
     return drawer_defaults
 
+
+def create_drawer_wood_stock_defaults():
+    """Create default wood stock options for drawers if they don't exist."""
+    if DrawerWoodStock.objects.exists():
+        print("Drawer wood stock options already exist. Skipping creation.")
+        return DrawerWoodStock.objects.all()
+
+    # Create common drawer wood stock options
+    wood_stocks = [
+        {"name": "Maple", "price": Decimal('12.00')},
+        {"name": "Oak", "price": Decimal('10.50')},
+        {"name": "Cherry", "price": Decimal('15.00')},
+        {"name": "Birch", "price": Decimal('11.00')},
+        {"name": "Pine", "price": Decimal('8.50')},
+        {"name": "Poplar", "price": Decimal('9.00')},
+    ]
+
+    created_stocks = []
+    for stock_data in wood_stocks:
+        stock = DrawerWoodStock.objects.create(**stock_data)
+        created_stocks.append(stock)
+        print(f"Created drawer wood stock: {stock.name} - ${stock.price}")
+
+    return created_stocks
+
+
+def create_drawer_edge_type_defaults():
+    """Create default edge types for drawers if they don't exist."""
+    if DrawerEdgeType.objects.exists():
+        print("Drawer edge types already exist. Skipping creation.")
+        return DrawerEdgeType.objects.all()
+
+    # Create common drawer edge types
+    edge_types = [
+        {"name": "Square Edge"},
+        {"name": "Rounded Edge"},
+        {"name": "Beveled Edge"},
+        {"name": "Bullnose Edge"},
+    ]
+
+    created_edges = []
+    for edge_data in edge_types:
+        edge = DrawerEdgeType.objects.create(**edge_data)
+        created_edges.append(edge)
+        print(f"Created drawer edge type: {edge.name}")
+
+    return created_edges
+
+
+def create_drawer_bottom_size_defaults():
+    """Create default bottom sizes for drawers if they don't exist."""
+    if DrawerBottomSize.objects.exists():
+        print("Drawer bottom sizes already exist. Skipping creation.")
+        return DrawerBottomSize.objects.all()
+
+    # Create common drawer bottom sizes
+    bottom_sizes = [
+        {"name": "1/4\" Plywood", "thickness": Decimal('0.250'), "price": Decimal('3.50')},
+        {"name": "1/2\" Plywood", "thickness": Decimal('0.500'), "price": Decimal('5.00')},
+        {"name": "3/8\" Plywood", "thickness": Decimal('0.375'), "price": Decimal('4.25')},
+        {"name": "1/4\" MDF", "thickness": Decimal('0.250'), "price": Decimal('2.75')},
+        {"name": "1/2\" MDF", "thickness": Decimal('0.500'), "price": Decimal('3.75')},
+    ]
+
+    created_bottoms = []
+    for bottom_data in bottom_sizes:
+        bottom = DrawerBottomSize.objects.create(**bottom_data)
+        created_bottoms.append(bottom)
+        print(f"Created drawer bottom: {bottom.name} ({bottom.thickness}\" thick) - ${bottom.price}")
+
+    return created_bottoms
+
+
+def create_drawer_pricing_defaults():
+    """Create default pricing configuration for drawers if they don't exist."""
+    if DrawerPricing.objects.exists():
+        print("Drawer pricing configuration already exists. Skipping creation.")
+        return DrawerPricing.objects.first()
+
+    # Create base drawer pricing configuration
+    pricing = DrawerPricing.objects.create(
+        price=Decimal('50.00'),  # Base price
+        height=Decimal('4.00')   # Standard height
+    )
+
+    print(f"Created drawer pricing configuration: Base price ${pricing.price}, Height {pricing.height}\"")
+    return pricing
+
+
+# ============================================================================
+# DOOR SETTINGS FUNCTIONS
+# ============================================================================
 
 def create_rail_defaults():
     """Create default rail settings for doors if they don't exist."""
@@ -269,13 +368,18 @@ def main():
     """Main function to create all default settings."""
     print("Creating default settings...")
 
-    # Create basic settings
+    # DRAWER SETTINGS
+    print("\n=== Creating Drawer Settings ===")
     drawer_defaults = create_drawer_defaults()
+    drawer_wood_stocks = create_drawer_wood_stock_defaults()
+    drawer_edge_types = create_drawer_edge_type_defaults()
+    drawer_bottom_sizes = create_drawer_bottom_size_defaults()
+    drawer_pricing = create_drawer_pricing_defaults()
+
+    # DOOR SETTINGS
+    print("\n=== Creating Door Settings ===")
     rail_defaults = create_rail_defaults()
     door_defaults = create_door_defaults()
-
-    # Create door-related default data
-    print("\nCreating door-related default data...")
     designs = create_design_defaults()
     edge_profiles = create_edge_profile_defaults()
     panel_rises = create_panel_rise_defaults()
@@ -287,18 +391,31 @@ def main():
     print(f"Rail Defaults: ID={rail_defaults.id}")
     print(f"Door Default Settings: ID={door_defaults.id}")
 
-    # Count created items
+    # Count drawer items
+    drawer_wood_stock_count = DrawerWoodStock.objects.count()
+    drawer_edge_type_count = DrawerEdgeType.objects.count()
+    drawer_bottom_size_count = DrawerBottomSize.objects.count()
+    drawer_pricing_count = DrawerPricing.objects.count()
+
+    # Count door items
     design_count = Design.objects.count()
     edge_profile_count = EdgeProfile.objects.count()
     panel_rise_count = PanelRise.objects.count()
     woodstock_count = WoodStock.objects.count()
     style_count = Style.objects.count()
 
-    print(f"Door Designs: {design_count} total")
-    print(f"Edge Profiles: {edge_profile_count} total")
-    print(f"Panel Rise Options: {panel_rise_count} total")
-    print(f"Wood Stock Options: {woodstock_count} total")
-    print(f"Door Styles: {style_count} total")
+    print(f"\nDrawer Settings:")
+    print(f"  Drawer Wood Stock Options: {drawer_wood_stock_count} total")
+    print(f"  Drawer Edge Types: {drawer_edge_type_count} total")
+    print(f"  Drawer Bottom Sizes: {drawer_bottom_size_count} total")
+    print(f"  Drawer Pricing Configurations: {drawer_pricing_count} total")
+
+    print(f"\nDoor Settings:")
+    print(f"  Door Designs: {design_count} total")
+    print(f"  Edge Profiles: {edge_profile_count} total")
+    print(f"  Panel Rise Options: {panel_rise_count} total")
+    print(f"  Wood Stock Options: {woodstock_count} total")
+    print(f"  Door Styles: {style_count} total")
     print("\nDefault settings creation completed successfully.")
 
 
