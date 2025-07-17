@@ -76,3 +76,4 @@ strategies.md
 backup_migrations/
 /node_modules/
 /myapp.zip
+/myapp_test.zip

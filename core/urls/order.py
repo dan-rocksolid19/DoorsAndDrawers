@@ -1,8 +1,7 @@
 from django.urls import path
 from ..views.order import (
-    orders, order_detail, create_order, delete_order, 
-    get_customer_details, order_search, generate_order_pdf,
-    remove_line_item
+    orders, order_detail, create_order, delete_order,
+    get_customer_details, order_search, remove_line_item, generate_order_pdf
 )
 
 urlpatterns = [

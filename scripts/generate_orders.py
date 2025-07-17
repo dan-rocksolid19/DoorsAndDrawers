@@ -219,20 +219,7 @@ def generate_quotes_and_orders(num_quotes=5, num_orders=5):
         'orders': orders
     }
 
-# Example usage:
-# python manage.py shell
-# from scripts.generate_orders import generate_orders, generate_quotes_and_orders
-# 
-# # Generate 5 orders
-# generate_orders(5, is_quote=False)
-# 
-# # Generate 3 quotes
-# generate_orders(3, is_quote=True)
-# 
-# # Generate both quotes and orders
-# generate_quotes_and_orders(4, 6) 
-
 
 if __name__ == '__main__':
     # Generate 3 orders by default when script is run directly
-    generate_orders(3)
+    generate_quotes_and_orders(30,30)

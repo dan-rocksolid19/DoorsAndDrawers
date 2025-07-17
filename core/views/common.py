@@ -1,10 +1,13 @@
 """
 Common view functions for order and quote listings and search functionality.
 """
+
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from decimal import Decimal, InvalidOperation
+
 from django_htmx.http import retarget
+
 from ..models import Customer
 
 
@@ -312,3 +315,5 @@ def get_current_customer(request):
             # Clear invalid customer ID from session
             del request.session['customer_id']
     return None
+
+

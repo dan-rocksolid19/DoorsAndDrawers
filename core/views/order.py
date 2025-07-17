@@ -1,14 +1,19 @@
+import io
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+
 from ..forms import OrderForm
-from ..models import Order
+from ..models import Order, DoorLineItem
 from django.http import HttpResponse, JsonResponse
 from ..models.customer import Customer
 from ..models.door import DoorLineItem
-from django.template.loader import render_to_string
 from itertools import chain
 from ..services.order_service import OrderService
 from .common import handle_entity_search, handle_entity_list
+
 
 def orders(request):
     """List all confirmed orders with pagination."""
@@ -267,6 +272,48 @@ def remove_line_item(request, item_id):
     # If not DELETE request, redirect to order detail
     return redirect('order_detail')
 
+
 def generate_order_pdf(request, order_id):
     """Generate a PDF version of the order for printing."""
-    return HttpResponse("to be implemented!")
+    # Get the order and related data
+    order = get_object_or_404(Order.confirmed, id=order_id)
+
+    # Get all door line items related to this order
+    door_items = DoorLineItem.objects.filter(order=order).select_related(
+        'wood_stock', 'edge_profile', 'panel_rise', 'style'
+    )
+
+    # Get all drawer line items related to this order
+    drawer_items = order.drawer_items.all().select_related(
+        'wood_stock', 'edge_type', 'bottom'
+    )
+
+    # Get all generic line items related to this order
+    generic_items = order.generic_items.all()
+
+    # Prepare context for the template
+    context = {
+        'order': order,
+        'door_items': door_items,
+        'drawer_items': drawer_items,
+        'generic_items': generic_items,
+    }
+
+    # Render the HTML template
+    html_string = render_to_string('pdf/order_pdf.html', context)
+
+    # Create a file-like buffer to receive PDF data
+    result = io.BytesIO()
+
+    # Convert HTML to PDF
+    pdf = pisa.pisaDocument(io.BytesIO(html_string.encode("UTF-8")), result)
+
+    # Check if PDF generation was successful
+    if not pdf.err:
+        # Create HTTP response with PDF content
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="order_{order.order_number}.pdf"'
+        return response
+    else:
+        # Return error response if PDF generation failed
+        return HttpResponse('Error generating PDF', status=500)

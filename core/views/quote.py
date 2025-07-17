@@ -7,6 +7,8 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from ..services.order_service import OrderService
 from .common import handle_entity_search, handle_entity_list
+from xhtml2pdf import pisa
+import io
 
 def quotes(request):
     """List all quotes with pagination."""
@@ -146,4 +148,45 @@ def quote_search(request):
 
 def generate_quote_pdf(request, quote_id):
     """Generate a PDF version of the quote for printing."""
-    return HttpResponse("to be implemented!")
+    # Get the quote and related data
+    quote = get_object_or_404(Order.quotes, id=quote_id)
+
+    # Get all door line items related to this quote
+    door_items = DoorLineItem.objects.filter(order=quote).select_related(
+        'wood_stock', 'edge_profile', 'panel_rise', 'style'
+    )
+
+    # Get all drawer line items related to this quote
+    drawer_items = quote.drawer_items.all().select_related(
+        'wood_stock', 'edge_type', 'bottom'
+    )
+
+    # Get all generic line items related to this quote
+    generic_items = quote.generic_items.all()
+
+    # Prepare context for the template
+    context = {
+        'quote': quote,
+        'door_items': door_items,
+        'drawer_items': drawer_items,
+        'generic_items': generic_items,
+    }
+
+    # Render the HTML template
+    html_string = render_to_string('pdf/quote_pdf.html', context)
+
+    # Create a file-like buffer to receive PDF data
+    result = io.BytesIO()
+
+    # Convert HTML to PDF
+    pdf = pisa.pisaDocument(io.BytesIO(html_string.encode("UTF-8")), result)
+
+    # Check if PDF generation was successful
+    if not pdf.err:
+        # Create HTTP response with PDF content
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="quote_{quote.order_number}.pdf"'
+        return response
+    else:
+        # Return error response if PDF generation failed
+        return HttpResponse('Error generating PDF', status=500)

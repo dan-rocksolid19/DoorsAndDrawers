@@ -20,13 +20,16 @@ def get_base_path():
     # Running from source
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BASE_PATH = get_base_path()
-LOG_DIR = os.path.join(BASE_PATH, '_internal', 'logs')
-
-os.makedirs(LOG_DIR, exist_ok=True)
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+BASE_PATH = get_base_path()
+
+if getattr(sys, 'frozen', False):
+    LOG_DIR = os.path.join(BASE_PATH, '_internal', 'logs')
+    os.makedirs(LOG_DIR, exist_ok=True)
+else:
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
 
 # Quick-start development settings - unsuitable for production
@@ -36,7 +39,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-xg#cj6u6gl1t9l0*g&ylo*o)dap%e@*won7t9!*2u1z36oc$^h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 

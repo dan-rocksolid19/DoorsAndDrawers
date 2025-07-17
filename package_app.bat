@@ -36,7 +36,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Step 4: Packaging application with PyInstaller...
-pyinstaller prod.spec
+pyinstaller app.spec
 
 if %errorlevel% neq 0 (
     echo ERROR: PyInstaller packaging failed
