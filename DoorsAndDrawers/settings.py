@@ -20,13 +20,16 @@ def get_base_path():
     # Running from source
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BASE_PATH = get_base_path()
-LOG_DIR = os.path.join(BASE_PATH, '_internal', 'logs')
-
-os.makedirs(LOG_DIR, exist_ok=True)
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+BASE_PATH = get_base_path()
+
+if getattr(sys, 'frozen', False):
+    LOG_DIR = os.path.join(BASE_PATH, '_internal', 'logs')
+    os.makedirs(LOG_DIR, exist_ok=True)
+else:
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
 
 # Quick-start development settings - unsuitable for production
